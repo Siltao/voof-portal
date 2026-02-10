@@ -1,25 +1,19 @@
 // Supabase Configuration
-// VOCÊ PRECISA SUBSTITUIR ESSAS CREDENCIAIS PELAS SUAS DO SUPABASE
-const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
+const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjFidnRwYXdrdWZlbWdpa2VlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MTAxMTAsImV4cCI6MjA1NDE4NjExMH0.ZyIGtnTXOsEilCJYrXQ1QjE3Nz42NQg2MTkzImV4cCI6MTcwMjgxNjIxfQ.eyJpc3M3NDE3ZzdXBhYmFzZSI6MTcwMjgxNjIxfQ';
 
-let supabase;
-let currentUser = null;
-
-// Initialize Supabase
-function initSupabase() {
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase initialized');
-    } catch (error) {
-        console.error('Error initializing Supabase:', error);
-    }
+// Verificar se já existe uma instância
+if (typeof window.voofSupabase === 'undefined') {
+    window.voofSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
+
+const supabaseClient = window.voofSupabase;
+let currentUser = null;
 
 // Check authentication
 async function checkAuth() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         
         if (user) {
             currentUser = user;
@@ -52,27 +46,49 @@ function showAdminPanel() {
 // Login
 async function login(email, password) {
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        console.log('Tentando fazer login...', email);
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
 
+        console.log('Resposta do login:', { data, error });
+
         if (error) throw error;
 
+        if (!data.user) {
+            throw new Error('Login retornou vazio. Verifique se o usuário existe no Supabase.');
+        }
+
         currentUser = data.user;
+        console.log('Login bem sucedido!', currentUser);
         showAdminPanel();
         loadPendingPosts();
         showAlert('login-alert', 'Login realizado com sucesso!', 'success');
     } catch (error) {
-        console.error('Login error:', error);
-        showAlert('login-alert', 'Erro ao fazer login: ' + error.message, 'error');
+        console.error('Login error completo:', error);
+        
+        let errorMessage = 'Erro desconhecido';
+        
+        if (error.message.includes('Invalid login credentials')) {
+            errorMessage = 'Email ou senha incorretos';
+        } else if (error.message.includes('Email not confirmed')) {
+            errorMessage = 'Email não confirmado. Verifique se marcou "Auto Confirm User" no Supabase';
+        } else if (error.message.includes('fetch')) {
+            errorMessage = 'Erro de conexão. Verifique se as credenciais do Supabase estão corretas';
+        } else {
+            errorMessage = error.message;
+        }
+        
+        showAlert('login-alert', 'Erro ao fazer login: ' + errorMessage, 'error');
     }
 }
 
 // Logout
 async function logout() {
     try {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         currentUser = null;
         showLoginScreen();
     } catch (error) {
@@ -83,7 +99,7 @@ async function logout() {
 // Load pending posts
 async function loadPendingPosts() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('posts')
             .select('*')
             .eq('status', 'pending')
@@ -106,7 +122,7 @@ async function loadPendingPosts() {
 // Load approved posts
 async function loadApprovedPosts() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('posts')
             .select('*')
             .eq('status', 'approved')
@@ -181,7 +197,7 @@ async function approvePost(postId) {
     if (!confirm('Deseja aprovar este post?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('posts')
             .update({ status: 'approved' })
             .eq('id', postId);
@@ -202,7 +218,7 @@ async function deletePost(postId) {
     if (!confirm('Deseja realmente excluir este post? Esta ação não pode ser desfeita.')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('posts')
             .delete()
             .eq('id', postId);
@@ -221,7 +237,7 @@ async function deletePost(postId) {
 // Create post
 async function createPost(postData) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('posts')
             .insert([{
                 title: postData.title,
@@ -231,7 +247,7 @@ async function createPost(postData) {
                 cover_image: postData.cover_image,
                 gallery_images: postData.gallery_images,
                 author: currentUser?.email?.split('@')[0] || 'Admin',
-                status: 'approved', // Auto-approve for admins
+                status: 'approved',
                 created_at: new Date().toISOString()
             }])
             .select();
@@ -241,7 +257,6 @@ async function createPost(postData) {
         showAlert('create-alert', 'Notícia criada e publicada com sucesso!', 'success');
         document.getElementById('create-post-form').reset();
         
-        // Reload approved posts
         setTimeout(() => {
             switchTab('approved');
             loadApprovedPosts();
@@ -268,19 +283,16 @@ function showAlert(containerId, message, type) {
 
 // Switch tabs
 function switchTab(tabName) {
-    // Update tab buttons
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
     });
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
-    // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
     document.getElementById(`${tabName}-tab`).classList.add('active');
 
-    // Load content if needed
     if (tabName === 'pending') {
         loadPendingPosts();
     } else if (tabName === 'approved') {
@@ -288,19 +300,14 @@ function switchTab(tabName) {
     }
 }
 
-// Format date
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return date.toLocaleDateString('pt-BR', options);
-}
+// Make functions available globally
+window.approvePost = approvePost;
+window.deletePost = deletePost;
 
 // Initialize
 async function init() {
-    initSupabase();
     await checkAuth();
 
-    // Event listeners
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -339,11 +346,6 @@ async function init() {
     });
 }
 
-// Make functions available globally
-window.approvePost = approvePost;
-window.deletePost = deletePost;
-
-// Start app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
