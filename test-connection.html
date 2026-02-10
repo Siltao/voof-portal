@@ -94,7 +94,7 @@
     <script>
         // IMPORTANTE: Copie as mesmas credenciais que você colocou no admin.js
         const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_etu5h9JvsI0Ot3hiYRnCOA_PuDvlYwl';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
         let supabase;
 
@@ -102,7 +102,7 @@
         function checkCredentials() {
             const div = document.getElementById('credentials-check');
             
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+            if (SUPABASE_URL === 'https://lbvtpawkufemglkaepqb.supabase.co' || SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ') {
                 div.innerHTML = `
                     <div class="error">
                         <strong>❌ CREDENCIAIS NÃO CONFIGURADAS!</strong><br><br>
