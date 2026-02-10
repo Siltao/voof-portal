@@ -1,27 +1,21 @@
 // Supabase Configuration
-// VOCÊ PRECISA SUBSTITUIR ESSAS CREDENCIAIS PELAS SUAS DO SUPABASE
-const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
+const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjFidnRwYXdrdWZlbWdpa2VlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MTAxMTAsImV4cCI6MjA1NDE4NjExMH0.ZyIGtnTXOsEilCJYrXQ1QjE3Nz42NQg2MTkzImV4cCI6MTcwMjgxNjIxfQ.eyJpc3M3NDE3NzdsdXBhYmFzZSI6MTcwMjgxNjIxfQ';
 
-let supabase;
+// Verificar se já existe uma instância
+if (typeof window.voofSupabase === 'undefined') {
+    window.voofSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+const supabaseClient = window.voofSupabase;
 let currentPosts = [];
 let currentCategory = 'all';
 let currentArticle = null;
 
-// Initialize Supabase
-function initSupabase() {
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase initialized');
-    } catch (error) {
-        console.error('Error initializing Supabase:', error);
-    }
-}
-
 // Load posts from Supabase
 async function loadPosts(category = 'all') {
     try {
-        let query = supabase
+        let query = supabaseClient
             .from('posts')
             .select('*')
             .eq('status', 'approved')
@@ -39,7 +33,6 @@ async function loadPosts(category = 'all') {
         renderFeed();
     } catch (error) {
         console.error('Error loading posts:', error);
-        // Show demo content if Supabase is not configured
         loadDemoContent();
     }
 }
@@ -86,7 +79,6 @@ function renderFeed() {
         </div>
     `).join('');
 
-    // Add swipe listeners
     addSwipeListeners();
 }
 
@@ -108,7 +100,6 @@ function addSwipeListeners() {
         });
 
         card.addEventListener('click', (e) => {
-            // Desktop click to open article
             if (window.innerWidth > 768) {
                 openArticle(card.dataset.postId);
             }
@@ -119,7 +110,6 @@ function addSwipeListeners() {
             const diff = touchEndX - touchStartX;
 
             if (diff > swipeThreshold) {
-                // Swipe right - open article
                 openArticle(element.dataset.postId);
             }
         }
@@ -136,7 +126,6 @@ async function openArticle(postId) {
         const modal = document.getElementById('article-modal');
         const content = document.getElementById('article-content');
 
-        // Build gallery HTML
         let galleryHTML = '';
         if (post.gallery_images && post.gallery_images.length > 0) {
             galleryHTML = `
@@ -192,83 +181,25 @@ function formatDate(dateString) {
 // Format article text
 function formatArticleText(text) {
     if (!text) return '';
-    
-    // Convert line breaks to paragraphs
     const paragraphs = text.split('\n\n').filter(p => p.trim());
     return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
 }
 
-// Load demo content (for when Supabase is not configured)
+// Load demo content
 function loadDemoContent() {
     currentPosts = [
         {
             id: 'demo-1',
-            title: 'Novo God of War anunciado para 2026',
-            short_description: 'Santa Monica Studios surpreende fãs com trailer épico do próximo capítulo da saga de Kratos.',
-            full_text: 'A Sony anunciou oficialmente o próximo jogo da franquia God of War durante o evento State of Play. O novo título promete expandir a mitologia nórdica com novos reinos e desafios.\n\nO trailer de revelação mostrou Kratos e Atreus em uma jornada ainda mais épica, enfrentando deuses nunca antes vistos na franquia. A previsão de lançamento é para o final de 2026.',
-            category: 'playstation',
-            cover_image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800'
-            ],
-            author: 'João Silva',
+            title: 'Bem-vindo ao VOOF!',
+            short_description: 'O portal de notícias geek mais moderno do Brasil está no ar!',
+            full_text: 'Configure o Supabase e comece a publicar suas notícias!\n\nAcesse voof.com.br/admin.html para gerenciar o conteúdo.',
+            category: 'tecnologia',
+            cover_image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
+            gallery_images: ['https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'],
+            author: 'VOOF Team',
             created_at: new Date().toISOString()
-        },
-        {
-            id: 'demo-2',
-            title: 'Xbox anuncia nova geração de controles',
-            short_description: 'Microsoft revela controles com feedback háptico avançado e bateria de 40 horas.',
-            full_text: 'A Microsoft anunciou uma nova linha de controles Xbox com tecnologia de ponta. Os novos controles contam com feedback háptico adaptativo, gatilhos com resistência variável e uma bateria que promete até 40 horas de uso contínuo.\n\nOs controles estarão disponíveis em diversas cores e edições especiais, chegando ao mercado brasileiro no segundo trimestre de 2026.',
-            category: 'xbox',
-            cover_image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800'
-            ],
-            author: 'Maria Santos',
-            created_at: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-            id: 'demo-3',
-            title: 'The Last of Us Parte 3 confirmado',
-            short_description: 'Naughty Dog confirma desenvolvimento do terceiro capítulo da aclamada série.',
-            full_text: 'Em entrevista exclusiva, Neil Druckmann confirmou que The Last of Us Parte 3 está em desenvolvimento. O diretor criativo prometeu uma história ainda mais impactante e emocionante.\n\n"Estamos trabalhando em algo especial que vai surpreender os fãs da franquia", declarou Druckmann. O jogo deve ser lançado exclusivamente para PlayStation 5.',
-            category: 'playstation',
-            cover_image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800'
-            ],
-            author: 'Pedro Costa',
-            created_at: new Date(Date.now() - 172800000).toISOString()
-        },
-        {
-            id: 'demo-4',
-            title: 'Nintendo Switch 2 tem data de revelação',
-            short_description: 'Vazamento indica que Nintendo pode revelar novo console em março de 2026.',
-            full_text: 'Fontes próximas à Nintendo indicam que a empresa planeja revelar o sucessor do Switch durante um evento especial em março. O novo console promete gráficos em 4K no modo dock e retrocompatibilidade com jogos do Switch original.\n\nEspecula-se que o console chegue ao mercado no segundo semestre de 2026 com um lineup forte de jogos first-party.',
-            category: 'nintendo',
-            cover_image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=800'
-            ],
-            author: 'Ana Oliveira',
-            created_at: new Date(Date.now() - 259200000).toISOString()
-        },
-        {
-            id: 'demo-5',
-            title: 'Stranger Things: Última temporada ganha trailer',
-            short_description: 'Netflix divulga trailer épico da temporada final da série que conquistou o mundo.',
-            full_text: 'A Netflix finalmente revelou o primeiro trailer da quinta e última temporada de Stranger Things. O vídeo promete uma conclusão épica para a história de Eleven e seus amigos.\n\nA temporada final será dividida em duas partes, com a primeira chegando em julho de 2026. Os fãs podem esperar batalhas épicas contra o Mundo Invertido e revelações surpreendentes sobre o passado de Hawkins.',
-            category: 'series',
-            cover_image: 'https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=800'
-            ],
-            author: 'Lucas Ferreira',
-            created_at: new Date(Date.now() - 345600000).toISOString()
         }
     ];
-    
     renderFeed();
 }
 
@@ -276,7 +207,6 @@ function loadDemoContent() {
 function filterByCategory(category) {
     currentCategory = category;
     
-    // Update active button
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -290,18 +220,12 @@ function filterByCategory(category) {
 
 // Initialize app
 async function init() {
-    // Hide loading screen after a delay
     setTimeout(() => {
         document.getElementById('loading-screen').classList.add('hidden');
     }, 1500);
 
-    // Initialize Supabase
-    initSupabase();
-
-    // Load initial posts
     await loadPosts();
 
-    // Event listeners
     document.querySelector('.close-btn').addEventListener('click', closeArticle);
     
     document.getElementById('category-select').addEventListener('change', (e) => {
@@ -318,13 +242,11 @@ async function init() {
         });
     });
 
-    // Hide scroll indicator after first scroll
     const feedContainer = document.getElementById('feed-container');
     feedContainer.addEventListener('scroll', () => {
         document.querySelector('.scroll-indicator').style.display = 'none';
     }, { once: true });
 
-    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeArticle();
@@ -332,7 +254,6 @@ async function init() {
     });
 }
 
-// Start app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
