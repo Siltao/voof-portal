@@ -1,7 +1,7 @@
 // Supabase Configuration
 // VOCÊ PRECISA SUBSTITUIR ESSAS CREDENCIAIS PELAS SUAS DO SUPABASE
 const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_etu5h9JvsI0Ot3hiYRnCOA_PuDvlYwl';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
 let supabase;
 let currentUser = null;
