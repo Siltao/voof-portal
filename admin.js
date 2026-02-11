@@ -1,5 +1,5 @@
 // Supabase Configuration
-const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
+const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjFidnRwYXdrdWZlbWdpa2VlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MTAxMTAsImV4cCI6MjA1NDE4NjExMH0.ZyIGtnTXOsEilCJYrXQ1QjE3Nz42NQg2MTkzImV4cCI6MTcwMjgxNjIxfQ.eyJpc3M3NDE3ZzdXBhYmFzZSI6MTcwMjgxNjIxfQ';
 
 // Verificar se já existe uma instância
