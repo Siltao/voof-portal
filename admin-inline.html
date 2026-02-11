@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOOF - Painel Administrativo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #121212;
+            --bg-input: #1a1a1a;
+            --accent-primary: #00ff9d;
+            --accent-secondary: #00d4ff;
+            --accent-danger: #ff4757;
+            --accent-warning: #ffa502;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-dim: #606060;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --gradient-glow: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-glow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-glow);
+            color: var(--bg-dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 157, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .login-container {
+            max-width: 450px;
+            margin: 5rem auto;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .alert-error {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--accent-danger);
+            color: var(--accent-danger);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <div class="login-container">
+            <h1 class="login-title">VOOF</h1>
+            <p class="login-subtitle">Painel Administrativo</p>
+            <div id="login-alert"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="login-email" required value="admin@voof.com.br">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" class="form-input" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-panel" style="display: none;">
+        <div class="header">
+            <div class="logo">VOOF</div>
+            <div>
+                <span id="user-name" style="margin-right: 1rem;"></span>
+                <button class="btn btn-secondary" id="logout-btn">Sair</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="success-message">
+                <div class="success-icon">🎉</div>
+                <h2>Login realizado com sucesso!</h2>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">
+                    Bem-vindo ao painel administrativo do VOOF!
+                </p>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">
+                    O painel completo de gerenciamento de posts será carregado aqui.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script>
+        // CREDENCIAIS INLINE - NÃO PRECISA DE ARQUIVO EXTERNO
+        const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IjFidnRwYXdrdWZlbWdpa2VlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MTAxMTAsImV4cCI6MjA1NDE4NjExMH0.ZyIGtnTXOsEilCJYrXQ1QjE3Nz42NQg2MTkzImV4cCI6MTcwMjgxNjIxfQ.eyJpc3M3NDE3ZzdXBhYmFzZSI6MTcwMjgxNjIxfQ';
+
+        console.log('🔧 Inicializando Supabase...');
+        console.log('URL:', SUPABASE_URL);
+        console.log('Key (primeiros 20 chars):', SUPABASE_ANON_KEY.substring(0, 20) + '...');
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        console.log('✅ Supabase cliente criado');
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        function showAdminPanel() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.email;
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('login-alert');
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        async function login(email, password) {
+            try {
+                console.log('🔐 Tentando fazer login...', email);
+                
+                showAlert('Fazendo login...', 'success');
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                console.log('📦 Resposta do login:', { data, error });
+
+                if (error) {
+                    console.error('❌ Erro:', error);
+                    throw error;
+                }
+
+                if (!data.user) {
+                    throw new Error('Login não retornou usuário');
+                }
+
+                currentUser = data.user;
+                console.log('✅ Login bem sucedido!', currentUser);
+                
+                showAlert('Login realizado com sucesso!', 'success');
+                
+                setTimeout(() => {
+                    showAdminPanel();
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Erro completo:', error);
+                
+                let errorMessage = 'Erro desconhecido';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Email ou senha incorretos';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Email não confirmado';
+                } else if (error.message.includes('fetch')) {
+                    errorMessage = 'Erro de conexão. Verifique sua internet.';
+                } else {
+                    errorMessage = error.message;
+                }
+                
+                showAlert('Erro: ' + errorMessage, 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                currentUser = null;
+                showLoginScreen();
+            } catch (error) {
+                console.error('Erro no logout:', error);
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (user) {
+                    currentUser = user;
+                    showAdminPanel();
+                } else {
+                    showLoginScreen();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar autenticação:', error);
+                showLoginScreen();
+            }
+        }
+
+        // Event listeners
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            await login(email, password);
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', logout);
+
+        // Verificar autenticação ao carregar
+        checkAuth();
+    </script>
+</body>
+</html>
