@@ -1,4 +1,5 @@
 // Supabase Configuration
+// IMPORTANTE: Substitua pela sua chave real do Supabase
 const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
@@ -8,12 +9,21 @@ if (typeof window.voofSupabase === 'undefined') {
 
 const supabaseClient = window.voofSupabase;
 let currentPosts = [];
+let allPosts = []; // Guardar todos os posts para busca
 let currentCategory = 'all';
 let currentArticle = null;
+let isSearchMode = false;
 
 // Load posts from Supabase
 async function loadPosts(category = 'all') {
     try {
+        // Verificar se a chave foi configurada
+        if (SUPABASE_ANON_KEY === 'SUA_CHAVE_ANON_AQUI') {
+            console.warn('Chave do Supabase não configurada. Carregando conteúdo demo.');
+            loadDemoContent();
+            return;
+        }
+
         let query = supabaseClient
             .from('posts')
             .select('*')
@@ -26,10 +36,21 @@ async function loadPosts(category = 'all') {
 
         const { data, error } = await query;
 
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao carregar posts:', error);
+            loadDemoContent();
+            return;
+        }
 
-        currentPosts = data || [];
-        renderFeed();
+        if (data && data.length > 0) {
+            currentPosts = data;
+            allPosts = data; // Guardar para busca
+            renderFeed();
+        } else {
+            // Se não houver posts no Supabase, mostrar demo
+            console.log('Nenhum post encontrado no Supabase. Carregando demo.');
+            loadDemoContent();
+        }
     } catch (error) {
         console.error('Error loading posts:', error);
         loadDemoContent();
@@ -263,7 +284,51 @@ function loadDemoContent() {
 // Category filter
 function filterByCategory(category) {
     currentCategory = category;
+    isSearchMode = false;
+    
+    // Esconder input de busca, mostrar select
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
+    if (searchInput) searchInput.style.display = 'none';
+    if (categorySelect) categorySelect.style.display = 'block';
+    
     loadPosts(category);
+}
+
+// Search function
+function searchPosts(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        filterByCategory('all');
+        return;
+    }
+
+    isSearchMode = true;
+    const term = searchTerm.toLowerCase().trim();
+    
+    // Buscar em título, descrição e texto completo
+    currentPosts = allPosts.filter(post => {
+        return (
+            post.title.toLowerCase().includes(term) ||
+            post.short_description.toLowerCase().includes(term) ||
+            post.full_text.toLowerCase().includes(term) ||
+            post.category.toLowerCase().includes(term) ||
+            (post.author && post.author.toLowerCase().includes(term))
+        );
+    });
+
+    renderFeed();
+}
+
+// Toggle search input
+function toggleSearchInput() {
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
+    
+    if (searchInput && categorySelect) {
+        searchInput.style.display = 'block';
+        categorySelect.style.display = 'none';
+        searchInput.focus();
+    }
 }
 
 // Initialize app
@@ -279,12 +344,17 @@ async function init() {
     // Event listeners
     const categorySelect = document.getElementById('category-select');
     const categorySelectDesktop = document.getElementById('category-select-desktop');
+    const searchInput = document.getElementById('search-input');
     
     if (categorySelect) {
         categorySelect.addEventListener('change', (e) => {
-            filterByCategory(e.target.value);
-            if (categorySelectDesktop) {
-                categorySelectDesktop.value = e.target.value;
+            if (e.target.value === 'search') {
+                toggleSearchInput();
+            } else {
+                filterByCategory(e.target.value);
+                if (categorySelectDesktop) {
+                    categorySelectDesktop.value = e.target.value;
+                }
             }
         });
     }
@@ -295,6 +365,39 @@ async function init() {
             if (categorySelect) {
                 categorySelect.value = e.target.value;
             }
+        });
+    }
+
+    // Search input
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchPosts(e.target.value);
+        });
+
+        // ESC para voltar ao select
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.style.display = 'none';
+                categorySelect.style.display = 'block';
+                categorySelect.value = 'all';
+                filterByCategory('all');
+            }
+        });
+
+        // Blur após 10s sem digitar
+        let searchTimeout;
+        searchInput.addEventListener('blur', () => {
+            searchTimeout = setTimeout(() => {
+                if (searchInput.value.trim() === '') {
+                    searchInput.style.display = 'none';
+                    categorySelect.style.display = 'block';
+                    categorySelect.value = 'all';
+                }
+            }, 3000);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            clearTimeout(searchTimeout);
         });
     }
 
