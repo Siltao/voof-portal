@@ -1,6 +1,6 @@
 // Supabase Configuration
 // IMPORTANTE: Substitua pela sua chave real do Supabase
-const SUPABASE_URL = 'https://1bvtpawkufemgikeepqb.supabase.co';
+const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
 if (typeof window.voofSupabase === 'undefined') {
