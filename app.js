@@ -1,5 +1,4 @@
 // Supabase Configuration
-// IMPORTANTE: Substitua pela sua chave real do Supabase
 const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
@@ -9,7 +8,7 @@ if (typeof window.voofSupabase === 'undefined') {
 
 const supabaseClient = window.voofSupabase;
 let currentPosts = [];
-let allPosts = []; // Guardar todos os posts para busca
+let allPosts = [];
 let currentCategory = 'all';
 let currentArticle = null;
 let isSearchMode = false;
@@ -17,12 +16,7 @@ let isSearchMode = false;
 // Load posts from Supabase
 async function loadPosts(category = 'all') {
     try {
-        // Verificar se a chave foi configurada
-        if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ') {
-            console.warn('Chave do Supabase não configurada. Carregando conteúdo demo.');
-            loadDemoContent();
-            return;
-        }
+        console.log('🔄 Carregando posts do Supabase...', category);
 
         let query = supabaseClient
             .from('posts')
@@ -36,23 +30,25 @@ async function loadPosts(category = 'all') {
 
         const { data, error } = await query;
 
+        console.log('📦 Resposta do Supabase:', { data, error, count: data?.length });
+
         if (error) {
-            console.error('Erro ao carregar posts:', error);
+            console.error('❌ Erro ao carregar posts:', error);
             loadDemoContent();
             return;
         }
 
         if (data && data.length > 0) {
+            console.log(`✅ ${data.length} posts carregados com sucesso!`);
             currentPosts = data;
-            allPosts = data; // Guardar para busca
+            allPosts = data;
             renderFeed();
         } else {
-            // Se não houver posts no Supabase, mostrar demo
-            console.log('Nenhum post encontrado no Supabase. Carregando demo.');
+            console.log('⚠️ Nenhum post aprovado encontrado. Carregando demo.');
             loadDemoContent();
         }
     } catch (error) {
-        console.error('Error loading posts:', error);
+        console.error('❌ Erro crítico ao carregar posts:', error);
         loadDemoContent();
     }
 }
@@ -77,7 +73,8 @@ function renderFeed() {
         <div class="story-card" data-post-id="${post.id}" data-index="${index}">
             <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'}" 
                  alt="${post.title}" 
-                 class="story-image">
+                 class="story-image"
+                 loading="lazy">
             <div class="story-overlay"></div>
             <div class="story-content">
                 <div class="story-header">
@@ -112,7 +109,6 @@ function addSwipeListeners() {
         let touchEndX = 0;
         let touchEndY = 0;
 
-        // Touch events for mobile
         card.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
             touchStartY = e.changedTouches[0].screenY;
@@ -124,9 +120,7 @@ function addSwipeListeners() {
             handleSwipe(card);
         });
 
-        // Click event for both mobile and desktop
         card.addEventListener('click', (e) => {
-            // Only open if not scrolling
             if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
                 openArticle(card.dataset.postId);
             }
@@ -138,14 +132,10 @@ function addSwipeListeners() {
             const diffX = Math.abs(touchEndX - touchStartX);
             const diffY = Math.abs(touchEndY - touchStartY);
 
-            // Se swipe em qualquer direção (exceto scroll vertical normal)
             if (diffX > swipeThresholdX || diffY > swipeThresholdY) {
-                // Não abrir se for scroll vertical para baixo ou para cima
                 if (diffY > diffX) {
-                    // É um scroll vertical, não abrir
                     return;
                 }
-                // Swipe horizontal - abrir artigo
                 openArticle(element.dataset.postId);
             }
         }
@@ -167,14 +157,14 @@ async function openArticle(postId) {
             galleryHTML = `
                 <div class="article-gallery">
                     ${post.gallery_images.map(img => `
-                        <img src="${img}" alt="Gallery image" class="gallery-image">
+                        <img src="${img}" alt="Gallery image" class="gallery-image" loading="lazy">
                     `).join('')}
                 </div>
             `;
         } else {
             galleryHTML = `
                 <div class="article-gallery">
-                    <img src="${post.cover_image}" alt="${post.title}" class="gallery-image">
+                    <img src="${post.cover_image}" alt="${post.title}" class="gallery-image" loading="lazy">
                 </div>
             `;
         }
@@ -196,7 +186,6 @@ async function openArticle(postId) {
 
         modal.classList.add('active');
         
-        // Show close button for mobile
         const closeBtnContainer = document.querySelector('.close-btn-container');
         if (closeBtnContainer) {
             closeBtnContainer.style.display = 'block';
@@ -212,7 +201,6 @@ function closeArticle() {
     modal.classList.remove('active');
     currentArticle = null;
     
-    // Hide close button
     const closeBtnContainer = document.querySelector('.close-btn-container');
     if (closeBtnContainer) {
         closeBtnContainer.style.display = 'none';
@@ -235,49 +223,22 @@ function formatArticleText(text) {
 
 // Load demo content
 function loadDemoContent() {
+    console.log('📦 Carregando conteúdo demo...');
     currentPosts = [
         {
             id: 'demo-1',
-            title: 'Novo God of War anunciado para 2026',
-            short_description: 'Santa Monica Studios surpreende fãs com trailer épico do próximo capítulo da saga de Kratos.',
-            full_text: 'A Sony anunciou oficialmente o próximo jogo da franquia God of War durante o evento State of Play. O novo título promete expandir a mitologia nórdica com novos reinos e desafios.\n\nO trailer de revelação mostrou Kratos e Atreus em uma jornada ainda mais épica, enfrentando deuses nunca antes vistos na franquia. A previsão de lançamento é para o final de 2026.',
-            category: 'playstation',
-            cover_image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800'
-            ],
-            author: 'João Silva',
+            title: 'Bem-vindo ao VOOF!',
+            short_description: 'Configure o Supabase ou crie posts no painel admin para ver suas notícias aqui.',
+            full_text: 'Este é um post de demonstração.\n\nPara ver seus próprios posts:\n1. Acesse voof.com.br/admin.html\n2. Faça login\n3. Crie notícias\n4. Aprove os posts\n\nEles aparecerão automaticamente aqui!',
+            category: 'tecnologia',
+            cover_image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
+            gallery_images: ['https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'],
+            author: 'VOOF Team',
             created_at: new Date().toISOString()
-        },
-        {
-            id: 'demo-2',
-            title: 'Xbox anuncia nova geração de controles',
-            short_description: 'Microsoft revela controles com feedback háptico avançado e bateria de 40 horas.',
-            full_text: 'A Microsoft anunciou uma nova linha de controles Xbox com tecnologia de ponta. Os novos controles contam com feedback háptico adaptativo, gatilhos com resistência variável e uma bateria que promete até 40 horas de uso contínuo.\n\nOs controles estarão disponíveis em diversas cores e edições especiais, chegando ao mercado brasileiro no segundo trimestre de 2026.',
-            category: 'xbox',
-            cover_image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800'
-            ],
-            author: 'Maria Santos',
-            created_at: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-            id: 'demo-3',
-            title: 'Nintendo Switch 2 tem data de revelação',
-            short_description: 'Vazamento indica que Nintendo pode revelar novo console em março de 2026.',
-            full_text: 'Fontes próximas à Nintendo indicam que a empresa planeja revelar o sucessor do Switch durante um evento especial em março. O novo console promete gráficos em 4K no modo dock e retrocompatibilidade com jogos do Switch original.\n\nEspecula-se que o console chegue ao mercado no segundo semestre de 2026 com um lineup forte de jogos first-party.',
-            category: 'nintendo',
-            cover_image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=800',
-            gallery_images: [
-                'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=800'
-            ],
-            author: 'Ana Oliveira',
-            created_at: new Date(Date.now() - 259200000).toISOString()
         }
     ];
     
+    allPosts = currentPosts;
     renderFeed();
 }
 
@@ -286,7 +247,6 @@ function filterByCategory(category) {
     currentCategory = category;
     isSearchMode = false;
     
-    // Esconder input de busca, mostrar select
     const searchInput = document.getElementById('search-input');
     const categorySelect = document.getElementById('category-select');
     if (searchInput) searchInput.style.display = 'none';
@@ -305,7 +265,6 @@ function searchPosts(searchTerm) {
     isSearchMode = true;
     const term = searchTerm.toLowerCase().trim();
     
-    // Buscar em título, descrição e texto completo
     currentPosts = allPosts.filter(post => {
         return (
             post.title.toLowerCase().includes(term) ||
@@ -316,6 +275,7 @@ function searchPosts(searchTerm) {
         );
     });
 
+    console.log(`🔍 Busca por "${searchTerm}": ${currentPosts.length} resultados`);
     renderFeed();
 }
 
@@ -333,15 +293,14 @@ function toggleSearchInput() {
 
 // Initialize app
 async function init() {
-    // Hide loading screen
+    console.log('🚀 Inicializando VOOF...');
+    
     setTimeout(() => {
         document.getElementById('loading-screen').classList.add('hidden');
     }, 1500);
 
-    // Load initial posts
     await loadPosts();
 
-    // Event listeners
     const categorySelect = document.getElementById('category-select');
     const categorySelectDesktop = document.getElementById('category-select-desktop');
     const searchInput = document.getElementById('search-input');
@@ -368,13 +327,11 @@ async function init() {
         });
     }
 
-    // Search input
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             searchPosts(e.target.value);
         });
 
-        // ESC para voltar ao select
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 searchInput.style.display = 'none';
@@ -384,7 +341,6 @@ async function init() {
             }
         });
 
-        // Blur após 10s sem digitar
         let searchTimeout;
         searchInput.addEventListener('blur', () => {
             searchTimeout = setTimeout(() => {
@@ -401,13 +357,11 @@ async function init() {
         });
     }
 
-    // Close button mobile
     const closeBtnMobile = document.getElementById('close-btn-mobile');
     if (closeBtnMobile) {
         closeBtnMobile.addEventListener('click', closeArticle);
     }
 
-    // Close on desktop header click
     const articleHeader = document.querySelector('.article-header');
     if (articleHeader && window.innerWidth > 768) {
         articleHeader.addEventListener('click', (e) => {
@@ -417,21 +371,20 @@ async function init() {
         });
     }
 
-    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeArticle();
         }
     });
 
-    // Initially hide close button
     const closeBtnContainer = document.querySelector('.close-btn-container');
     if (closeBtnContainer) {
         closeBtnContainer.style.display = 'none';
     }
+
+    console.log('✅ VOOF inicializado com sucesso!');
 }
 
-// Start app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
