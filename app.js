@@ -234,7 +234,7 @@ function formatArticleText(text) {
 }
 
 // Load demo content
-function oadDemoContent() {
+function loadDemoContent() {
     currentPosts = [
         {
             id: 'demo-1',
