@@ -18,7 +18,7 @@ let isSearchMode = false;
 async function loadPosts(category = 'all') {
     try {
         // Verificar se a chave foi configurada
-        if (SUPABASE_ANON_KEY === 'SUA_CHAVE_ANON_AQUI') {
+        if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ') {
             console.warn('Chave do Supabase não configurada. Carregando conteúdo demo.');
             loadDemoContent();
             return;
