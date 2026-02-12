@@ -139,7 +139,7 @@
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        #category-select {
+        #category-select, #search-input {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             color: var(--text-primary);
@@ -153,6 +153,9 @@
             transition: all 0.3s ease;
             width: 100%;
             max-width: 300px;
+        }
+
+        #category-select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -160,8 +163,19 @@
             padding-right: 2.5rem;
         }
 
+        #search-input {
+            cursor: text;
+            background-image: none;
+        }
+
+        #search-input::placeholder {
+            color: var(--text-dim);
+        }
+
         #category-select:hover,
-        #category-select:focus {
+        #category-select:focus,
+        #search-input:hover,
+        #search-input:focus {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
         }
@@ -521,16 +535,18 @@
     <!-- Bottom Navigation - Mobile -->
     <div class="bottom-nav">
         <select id="category-select">
-            <option value="all">📱 Todas as Categorias</option>
-            <option value="filmes">🎬 Filmes</option>
-            <option value="series">📺 Séries</option>
-            <option value="xbox">🎮 Xbox</option>
-            <option value="playstation">🕹️ PlayStation</option>
-            <option value="nintendo">🎮 Nintendo</option>
-            <option value="pc">💻 PC Gaming</option>
-            <option value="tecnologia">⚡ Tecnologia</option>
-            <option value="anime">🎌 Anime</option>
+            <option value="search">🔍 Buscar...</option>
+            <option value="all">Todas as Categorias</option>
+            <option value="filmes">Filmes</option>
+            <option value="series">Séries</option>
+            <option value="xbox">Xbox</option>
+            <option value="playstation">PlayStation</option>
+            <option value="nintendo">Nintendo</option>
+            <option value="pc">PC Gaming</option>
+            <option value="tecnologia">Tecnologia</option>
+            <option value="anime">Anime</option>
         </select>
+        <input type="text" id="search-input" placeholder="Digite para buscar..." style="display: none;">
     </div>
 
     <!-- Feed Container -->
