@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9692395795593484"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VOOF - Portal de Notícias Geek</title>
@@ -90,7 +88,7 @@
             50% { opacity: 0.8; transform: scale(1.05); }
         }
 
-        /* Header */
+        /* Header - Desktop only */
         header {
             position: fixed;
             top: 0;
@@ -123,46 +121,49 @@
             align-items: center;
         }
 
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 20px;
-            color: var(--text-secondary);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .filter-btn.active {
-            background: var(--gradient-glow);
-            color: var(--bg-dark);
-            border-color: transparent;
-            font-weight: 600;
+        /* Bottom Navigation - Mobile */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-subtle);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1rem;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
         }
 
         #category-select {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             color: var(--text-primary);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
             outline: none;
             transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
         }
 
-        #category-select:hover {
+        #category-select:hover,
+        #category-select:focus {
             border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
         }
 
         /* Feed Container */
@@ -189,6 +190,7 @@
             scroll-snap-align: start;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
 
         .story-image {
@@ -295,7 +297,7 @@
             50% { transform: translateX(10px); }
         }
 
-        /* Full Article Modal */
+        /* Article Modal */
         #article-modal {
             position: fixed;
             inset: 0;
@@ -318,31 +320,52 @@
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-subtle);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             z-index: 10;
         }
 
+        /* Close Button - Always Visible and Prominent */
+        .close-btn-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+            pointer-events: none;
+        }
+
         .close-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            width: 40px;
-            height: 40px;
+            background: var(--gradient-glow);
+            color: var(--bg-dark);
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
             transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 255, 157, 0.4);
+            border: none;
+            pointer-events: all;
+            animation: floatButton 3s ease-in-out infinite;
+        }
+
+        @keyframes floatButton {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         .close-btn:hover {
-            background: var(--accent-primary);
-            color: var(--bg-dark);
-            border-color: var(--accent-primary);
-            transform: rotate(90deg);
+            transform: scale(1.1);
+            box-shadow: 0 10px 40px rgba(0, 255, 157, 0.6);
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
         }
 
         .article-gallery {
@@ -369,6 +392,7 @@
             padding: 2rem 1.5rem;
             max-width: 800px;
             margin: 0 auto;
+            padding-bottom: 100px;
         }
 
         .article-title {
@@ -406,15 +430,23 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Responsive */
+        /* Responsive - Mobile */
         @media (max-width: 768px) {
-            .filter-container {
-                gap: 0.3rem;
+            header {
+                display: none;
             }
-            
-            .filter-btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
+
+            .bottom-nav {
+                display: flex;
+            }
+
+            #feed-container {
+                top: 0;
+                bottom: 70px;
+            }
+
+            .story-card {
+                height: calc(100vh - 70px);
             }
 
             .story-title {
@@ -426,28 +458,37 @@
             }
         }
 
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 50px;
-            height: 50px;
-            background: rgba(0, 255, 157, 0.2);
-            border: 2px solid var(--accent-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            animation: bounce 2s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 50;
-        }
+        /* Desktop specific */
+        @media (min-width: 769px) {
+            .close-btn-container {
+                display: none;
+            }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            .article-header {
+                justify-content: space-between;
+            }
+
+            .article-header::after {
+                content: '×';
+                font-size: 2rem;
+                cursor: pointer;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+                background: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+            }
+
+            .article-header::after:hover {
+                background: var(--accent-primary);
+                color: var(--bg-dark);
+                border-color: var(--accent-primary);
+                transform: rotate(90deg);
+            }
         }
     </style>
 </head>
@@ -459,13 +500,12 @@
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- Header - Desktop -->
     <header>
         <div class="logo">VOOF</div>
         <div class="filter-container">
-            <button class="filter-btn active" data-filter="all">Todas</button>
-            <select id="category-select">
-                <option value="all">Categorias</option>
+            <select id="category-select-desktop">
+                <option value="all">Todas Categorias</option>
                 <option value="filmes">Filmes</option>
                 <option value="series">Séries</option>
                 <option value="xbox">Xbox</option>
@@ -478,22 +518,38 @@
         </div>
     </header>
 
+    <!-- Bottom Navigation - Mobile -->
+    <div class="bottom-nav">
+        <select id="category-select">
+            <option value="all">📱 Todas as Categorias</option>
+            <option value="filmes">🎬 Filmes</option>
+            <option value="series">📺 Séries</option>
+            <option value="xbox">🎮 Xbox</option>
+            <option value="playstation">🕹️ PlayStation</option>
+            <option value="nintendo">🎮 Nintendo</option>
+            <option value="pc">💻 PC Gaming</option>
+            <option value="tecnologia">⚡ Tecnologia</option>
+            <option value="anime">🎌 Anime</option>
+        </select>
+    </div>
+
     <!-- Feed Container -->
     <div id="feed-container"></div>
-
-    <!-- Scroll Indicator -->
-    <div class="scroll-indicator">↓</div>
 
     <!-- Article Modal -->
     <div id="article-modal">
         <div class="article-header">
             <div class="logo">VOOF</div>
-            <button class="close-btn">×</button>
         </div>
         <div id="article-content"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Floating Close Button - Mobile -->
+    <div class="close-btn-container">
+        <button class="close-btn" id="close-btn-mobile">✕</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
