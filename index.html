@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VOOF - Portal de Notícias Geek</title>
+    <title>VOOF - Portal de Notícias Geek v2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -37,7 +37,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Grain texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -51,7 +50,6 @@
             mix-blend-mode: overlay;
         }
 
-        /* Loading Screen */
         #loading-screen {
             position: fixed;
             inset: 0;
@@ -88,7 +86,6 @@
             50% { opacity: 0.8; transform: scale(1.05); }
         }
 
-        /* Header - Desktop only */
         header {
             position: fixed;
             top: 0;
@@ -121,7 +118,6 @@
             align-items: center;
         }
 
-        /* Bottom Navigation - Mobile */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -180,7 +176,6 @@
             box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
         }
 
-        /* Feed Container */
         #feed-container {
             position: fixed;
             top: 70px;
@@ -197,7 +192,6 @@
             display: none;
         }
 
-        /* Story Card */
         .story-card {
             width: 100%;
             height: calc(100vh - 70px);
@@ -214,6 +208,39 @@
             position: absolute;
             top: 0;
             left: 0;
+        }
+
+        .story-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .mute-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid white;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .mute-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
         }
 
         .story-overlay {
@@ -252,6 +279,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-right: 0.5rem;
         }
 
         .story-meta {
@@ -311,7 +339,6 @@
             50% { transform: translateX(10px); }
         }
 
-        /* Article Modal */
         #article-modal {
             position: fixed;
             inset: 0;
@@ -339,7 +366,6 @@
             z-index: 10;
         }
 
-        /* Close Button - Always Visible and Prominent */
         .close-btn-container {
             position: fixed;
             bottom: 20px;
@@ -402,6 +428,13 @@
             scroll-snap-align: center;
         }
 
+        .gallery-video {
+            width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            background: #000;
+        }
+
         .article-body {
             padding: 2rem 1.5rem;
             max-width: 800px;
@@ -444,7 +477,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Responsive - Mobile */
         @media (max-width: 768px) {
             header {
                 display: none;
@@ -472,7 +504,6 @@
             }
         }
 
-        /* Desktop specific */
         @media (min-width: 769px) {
             .close-btn-container {
                 display: none;
@@ -507,14 +538,12 @@
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader">
             <div class="loader-logo">VOOF</div>
         </div>
     </div>
 
-    <!-- Header - Desktop -->
     <header>
         <div class="logo">VOOF</div>
         <div class="filter-container">
@@ -528,14 +557,14 @@
                 <option value="pc">PC Gaming</option>
                 <option value="tecnologia">Tecnologia</option>
                 <option value="anime">Anime</option>
+                <option value="ia">IA</option>
             </select>
         </div>
     </header>
 
-    <!-- Bottom Navigation - Mobile -->
     <div class="bottom-nav">
         <select id="category-select">
-            <option value="search">🔍 Buscar...</option>
+            <option value="search">🔍 Filtro de Notícias</option>
             <option value="all">Todas as Categorias</option>
             <option value="filmes">Filmes</option>
             <option value="series">Séries</option>
@@ -545,14 +574,13 @@
             <option value="pc">PC Gaming</option>
             <option value="tecnologia">Tecnologia</option>
             <option value="anime">Anime</option>
+            <option value="ia">IA</option>
         </select>
         <input type="text" id="search-input" placeholder="Digite para buscar..." style="display: none;">
     </div>
 
-    <!-- Feed Container -->
     <div id="feed-container"></div>
 
-    <!-- Article Modal -->
     <div id="article-modal">
         <div class="article-header">
             <div class="logo">VOOF</div>
@@ -560,7 +588,6 @@
         <div id="article-content"></div>
     </div>
 
-    <!-- Floating Close Button - Mobile -->
     <div class="close-btn-container">
         <button class="close-btn" id="close-btn-mobile">✕</button>
     </div>
