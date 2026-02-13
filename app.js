@@ -187,15 +187,17 @@ function renderFeed() {
                     </iframe>
                 `;
             } else {
-                // MP4 direto
+                // MP4 direto - com atributos para Safari
                 videoHTML = `
                     <video 
                         class="story-video" 
                         src="${post.video_url}" 
                         playsinline 
+                        webkit-playsinline
                         autoplay 
                         muted 
                         loop
+                        preload="metadata"
                         data-post-id="${post.id}">
                     </video>
                     <button class="mute-btn" onclick="toggleMute(event, '${post.id}')">🔇</button>
@@ -246,37 +248,101 @@ function addSwipeListeners() {
         let touchStartY = 0;
         let touchEndX = 0;
         let touchEndY = 0;
+        let isSwiping = false;
 
         card.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
             touchStartY = e.changedTouches[0].screenY;
-        });
+            touchEndX = touchStartX;
+            touchEndY = touchStartY;
+            isSwiping = false;
+        }, { passive: true });
+
+        card.addEventListener('touchmove', (e) => {
+            const moveX = e.changedTouches[0].screenX;
+            const moveY = e.changedTouches[0].screenY;
+            const diffX = Math.abs(moveX - touchStartX);
+            const diffY = Math.abs(moveY - touchStartY);
+            
+            // Marca como swiping se moveu mais que 10px
+            if (diffX > 10 || diffY > 10) {
+                isSwiping = true;
+            }
+        }, { passive: true });
 
         card.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
             touchEndY = e.changedTouches[0].screenY;
-            handleSwipe(card);
-        });
-
-        card.addEventListener('click', (e) => {
-            if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
+            
+            const diffX = Math.abs(touchEndX - touchStartX);
+            const diffY = Math.abs(touchEndY - touchStartY);
+            
+            // Se foi um swipe horizontal significativo
+            if (diffX > 50 && diffX > diffY) {
+                e.preventDefault();
+                openArticle(card.dataset.postId);
+            }
+            // Se foi um tap (não moveu muito)
+            else if (!isSwiping && diffX < 10 && diffY < 10) {
+                e.preventDefault();
                 openArticle(card.dataset.postId);
             }
         });
 
-        function handleSwipe(element) {
-            const swipeThresholdX = 50;
-            const swipeThresholdY = 50;
-            const diffX = Math.abs(touchEndX - touchStartX);
-            const diffY = Math.abs(touchEndY - touchStartY);
+        // Desktop click
+        card.addEventListener('click', (e) => {
+            // Não abrir se clicou no botão de mute
+            if (e.target.classList.contains('mute-btn')) return;
+            openArticle(card.dataset.postId);
+        });
+    });
+    
+    // Adicionar observer para pausar/tocar vídeos ao rolar
+    setupVideoObserver();
+}
 
-            if (diffX > swipeThresholdX || diffY > swipeThresholdY) {
-                if (diffY > diffX) {
-                    return;
+// Observar vídeos no viewport
+function setupVideoObserver() {
+    const options = {
+        root: document.getElementById('feed-container'),
+        threshold: 0.5 // Vídeo precisa estar 50% visível
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const card = entry.target;
+            const video = card.querySelector('video');
+            const iframe = card.querySelector('iframe');
+
+            if (entry.isIntersecting) {
+                // Vídeo está visível - tocar (mutado)
+                if (video) {
+                    video.muted = true;
+                    video.play().catch(e => console.log('Autoplay prevented'));
                 }
-                openArticle(element.dataset.postId);
+                if (iframe && iframe.src.includes('youtube')) {
+                    // YouTube autoplay já está no embed URL
+                }
+            } else {
+                // Vídeo saiu da tela - pausar
+                if (video) {
+                    video.pause();
+                    video.muted = true;
+                }
+                if (iframe && iframe.src.includes('youtube')) {
+                    // Pausar YouTube iframe (recarregar com autoplay=0)
+                    const src = iframe.src;
+                    if (src.includes('autoplay=1')) {
+                        iframe.src = src.replace('autoplay=1', 'autoplay=0');
+                    }
+                }
             }
-        }
+        });
+    }, options);
+
+    // Observar todos os cards
+    document.querySelectorAll('.story-card').forEach(card => {
+        observer.observe(card);
     });
 }
 
@@ -417,6 +483,24 @@ async function openArticle(postId) {
 // Close article
 function closeArticle() {
     const modal = document.getElementById('article-modal');
+    
+    // Parar todos os vídeos e iframes do modal
+    const videos = modal.querySelectorAll('video');
+    const iframes = modal.querySelectorAll('iframe');
+    
+    videos.forEach(video => {
+        video.pause();
+        video.currentTime = 0;
+        video.muted = true;
+    });
+    
+    iframes.forEach(iframe => {
+        // Forçar parada removendo e recriando (mais efetivo)
+        const src = iframe.src;
+        iframe.src = '';
+        setTimeout(() => iframe.src = src, 100);
+    });
+    
     modal.classList.remove('active');
     currentArticle = null;
     
@@ -424,6 +508,19 @@ function closeArticle() {
     if (closeBtnContainer) {
         closeBtnContainer.style.display = 'none';
     }
+    
+    // Reativar vídeos do feed (se estiverem visíveis)
+    setTimeout(() => {
+        const feedVideos = document.querySelectorAll('#feed-container video');
+        feedVideos.forEach(video => {
+            const rect = video.getBoundingClientRect();
+            const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            if (isVisible) {
+                video.muted = true;
+                video.play().catch(e => console.log('Autoplay prevented'));
+            }
+        });
+    }, 500);
 }
 
 // Format date
