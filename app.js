@@ -154,7 +154,7 @@ function renderFeed() {
                 videoHTML = `
                     <iframe 
                         class="story-video" 
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0"
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&playsinline=1"
                         frameborder="0"
                         allow="autoplay; encrypted-media"
                         allowfullscreen>
@@ -168,7 +168,7 @@ function renderFeed() {
                 videoHTML = `
                     <iframe 
                         class="story-video" 
-                        src="https://www.tiktok.com/embed/v2/${videoId}"
+                        src="https://www.tiktok.com/embed/v2/${videoId}?autoplay=1"
                         frameborder="0"
                         allow="autoplay; encrypted-media"
                         allowfullscreen>
@@ -180,14 +180,14 @@ function renderFeed() {
                 videoHTML = `
                     <iframe 
                         class="story-video" 
-                        src="https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&controls=0"
+                        src="https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&controls=0&playsinline=1"
                         frameborder="0"
                         allow="autoplay; encrypted-media"
                         allowfullscreen>
                     </iframe>
                 `;
             } else {
-                // MP4 direto - com atributos para Safari
+                // MP4 direto - com atributos para Safari e Chrome
                 videoHTML = `
                     <video 
                         class="story-video" 
@@ -197,8 +197,9 @@ function renderFeed() {
                         autoplay 
                         muted 
                         loop
-                        preload="metadata"
-                        data-post-id="${post.id}">
+                        preload="auto"
+                        data-post-id="${post.id}"
+                        onloadedmetadata="this.muted=true;this.play();">
                     </video>
                     <button class="mute-btn" onclick="toggleMute(event, '${post.id}')">🔇</button>
                 `;
@@ -237,6 +238,15 @@ function renderFeed() {
     }).join('');
 
     addSwipeListeners();
+    
+    // Forçar play em todos os vídeos após renderizar
+    setTimeout(() => {
+        const allVideos = document.querySelectorAll('#feed-container video');
+        allVideos.forEach(video => {
+            video.muted = true;
+            video.play().catch(e => console.log('Video autoplay blocked, observer will handle'));
+        });
+    }, 100);
 }
 
 // Add swipe and click listeners
@@ -303,9 +313,13 @@ function addSwipeListeners() {
 
 // Observar vídeos no viewport
 function setupVideoObserver() {
+    const feedContainer = document.getElementById('feed-container');
+    if (!feedContainer) return;
+
     const options = {
-        root: document.getElementById('feed-container'),
-        threshold: 0.5 // Vídeo precisa estar 50% visível
+        root: feedContainer,
+        threshold: 0.5, // 50% visível
+        rootMargin: '0px'
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -315,35 +329,49 @@ function setupVideoObserver() {
             const iframe = card.querySelector('iframe');
 
             if (entry.isIntersecting) {
-                // Vídeo está visível - tocar (mutado)
+                // Card está visível - tocar vídeo
                 if (video) {
                     video.muted = true;
-                    video.play().catch(e => console.log('Autoplay prevented'));
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.log('Autoplay blocked, will play on interaction');
+                            // Tentar novamente após pequeno delay
+                            setTimeout(() => {
+                                video.play().catch(() => {});
+                            }, 100);
+                        });
+                    }
                 }
-                if (iframe && iframe.src.includes('youtube')) {
-                    // YouTube autoplay já está no embed URL
-                }
+                // YouTube/iframe já tem autoplay na URL
             } else {
-                // Vídeo saiu da tela - pausar
+                // Card saiu - pausar vídeo
                 if (video) {
                     video.pause();
-                    video.muted = true;
                 }
+                // Pausar YouTube (opcional, pode deixar tocando)
                 if (iframe && iframe.src.includes('youtube')) {
-                    // Pausar YouTube iframe (recarregar com autoplay=0)
-                    const src = iframe.src;
-                    if (src.includes('autoplay=1')) {
-                        iframe.src = src.replace('autoplay=1', 'autoplay=0');
-                    }
+                    // YouTube continua tocando em background (economiza dados)
                 }
             }
         });
     }, options);
 
-    // Observar todos os cards
-    document.querySelectorAll('.story-card').forEach(card => {
+    // Observar todos os cards ATUAIS
+    const cards = document.querySelectorAll('.story-card');
+    cards.forEach(card => {
         observer.observe(card);
     });
+
+    // Também ativar vídeo do primeiro card imediatamente
+    const firstCard = document.querySelector('.story-card');
+    if (firstCard) {
+        const firstVideo = firstCard.querySelector('video');
+        if (firstVideo) {
+            firstVideo.muted = true;
+            firstVideo.play().catch(e => console.log('First video autoplay blocked'));
+        }
+    }
 }
 
 // Open article
