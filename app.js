@@ -13,6 +13,51 @@ let currentCategory = 'all';
 let currentArticle = null;
 let isSearchMode = false;
 
+// Detectar tipo de mídia
+function getMediaType(url) {
+    if (!url) return 'image';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+    if (url.includes('vimeo.com')) return 'vimeo';
+    if (url.match(/\.(mp4|webm|ogg|mov)$/i)) return 'video';
+    return 'image';
+}
+
+// Extrair ID do YouTube
+function getYouTubeID(url) {
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    return match ? match[1] : null;
+}
+
+// Extrair ID do Vimeo
+function getVimeoID(url) {
+    const match = url.match(/vimeo\.com\/(\d+)/);
+    return match ? match[1] : null;
+}
+
+// Registrar visualização
+async function trackView(postId) {
+    try {
+        await supabaseClient.rpc('increment_post_views', { post_uuid: postId });
+        console.log('📊 Visualização registrada:', postId);
+    } catch (error) {
+        console.log('Analytics error:', error);
+    }
+}
+
+// Toggle mute
+function toggleMute(event, postId) {
+    event.stopPropagation();
+    const video = document.querySelector(`video[data-post-id="${postId}"]`);
+    const btn = event.target;
+    
+    if (video) {
+        video.muted = !video.muted;
+        btn.textContent = video.muted ? '🔇' : '🔊';
+    }
+}
+
+window.toggleMute = toggleMute;
+
 // Load posts from Supabase
 async function loadPosts(category = 'all') {
     try {
@@ -25,7 +70,7 @@ async function loadPosts(category = 'all') {
             .order('created_at', { ascending: false });
 
         if (category !== 'all') {
-            query = query.eq('category', category);
+            query = query.contains('categories', [category]);
         }
 
         const { data, error } = await query;
@@ -69,16 +114,35 @@ function renderFeed() {
         return;
     }
 
-    feedContainer.innerHTML = currentPosts.map((post, index) => `
+    feedContainer.innerHTML = currentPosts.map((post, index) => {
+        const isVideo = post.post_type === 'video';
+        const categories = post.categories || [post.category];
+        const categoryDisplay = categories[0];
+        
+        return `
         <div class="story-card" data-post-id="${post.id}" data-index="${index}">
-            <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'}" 
-                 alt="${post.title}" 
-                 class="story-image"
-                 loading="lazy">
+            ${isVideo ? `
+                <video 
+                    class="story-video" 
+                    src="${post.video_url}" 
+                    playsinline 
+                    autoplay 
+                    muted 
+                    loop
+                    data-post-id="${post.id}">
+                </video>
+                <button class="mute-btn" onclick="toggleMute(event, '${post.id}')">🔇</button>
+            ` : `
+                <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'}" 
+                     alt="${post.title}" 
+                     class="story-image"
+                     loading="lazy">
+            `}
             <div class="story-overlay"></div>
             <div class="story-content">
                 <div class="story-header">
-                    <span class="category-badge">${post.category}</span>
+                    <span class="category-badge">${categoryDisplay}</span>
+                    ${categories.length > 1 ? `<span class="category-badge" style="opacity: 0.8; font-size: 0.7rem;">+${categories.length - 1}</span>` : ''}
                     <div class="story-meta">
                         <div>${post.author || 'VOOF Team'}</div>
                         <div>${formatDate(post.created_at)}</div>
@@ -94,7 +158,8 @@ function renderFeed() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     addSwipeListeners();
 }
@@ -148,12 +213,26 @@ async function openArticle(postId) {
         const post = currentPosts.find(p => p.id === postId);
         if (!post) return;
 
+        // Rastrear visualização
+        trackView(postId);
+
         currentArticle = post;
         const modal = document.getElementById('article-modal');
         const content = document.getElementById('article-content');
 
         let galleryHTML = '';
-        if (post.gallery_images && post.gallery_images.length > 0) {
+        if (post.post_type === 'video') {
+            galleryHTML = `
+                <div class="article-gallery">
+                    <video 
+                        class="gallery-video" 
+                        src="${post.video_url}" 
+                        controls
+                        playsinline>
+                    </video>
+                </div>
+            `;
+        } else if (post.gallery_images && post.gallery_images.length > 0) {
             galleryHTML = `
                 <div class="article-gallery">
                     ${post.gallery_images.map(img => `
@@ -169,12 +248,14 @@ async function openArticle(postId) {
             `;
         }
 
+        const categories = post.categories || [post.category];
+
         content.innerHTML = `
             ${galleryHTML}
             <div class="article-body">
                 <h1 class="article-title">${post.title}</h1>
                 <div class="article-info">
-                    <span class="info-item"><strong>Categoria:</strong> ${post.category}</span>
+                    <span class="info-item"><strong>Categorias:</strong> ${categories.join(', ')}</span>
                     <span class="info-item"><strong>Autor:</strong> ${post.author || 'VOOF Team'}</span>
                     <span class="info-item"><strong>Data:</strong> ${formatDate(post.created_at)}</span>
                 </div>
@@ -190,6 +271,29 @@ async function openArticle(postId) {
         if (closeBtnContainer) {
             closeBtnContainer.style.display = 'block';
         }
+
+        // Adicionar swipe lateral para fechar
+        let articleTouchStartX = 0;
+        let articleTouchEndX = 0;
+
+        const swipeHandler = (e) => {
+            if (e.type === 'touchstart') {
+                articleTouchStartX = e.changedTouches[0].screenX;
+            } else if (e.type === 'touchend') {
+                articleTouchEndX = e.changedTouches[0].screenX;
+                const diff = articleTouchEndX - articleTouchStartX;
+                
+                if (Math.abs(diff) > 100) {
+                    closeArticle();
+                    modal.removeEventListener('touchstart', swipeHandler);
+                    modal.removeEventListener('touchend', swipeHandler);
+                }
+            }
+        };
+
+        modal.addEventListener('touchstart', swipeHandler);
+        modal.addEventListener('touchend', swipeHandler);
+
     } catch (error) {
         console.error('Error opening article:', error);
     }
@@ -227,14 +331,17 @@ function loadDemoContent() {
     currentPosts = [
         {
             id: 'demo-1',
-            title: 'Bem-vindo ao VOOF!',
-            short_description: 'Configure o Supabase ou crie posts no painel admin para ver suas notícias aqui.',
-            full_text: 'Este é um post de demonstração.\n\nPara ver seus próprios posts:\n1. Acesse voof.com.br/admin.html\n2. Faça login\n3. Crie notícias\n4. Aprove os posts\n\nEles aparecerão automaticamente aqui!',
+            title: 'Bem-vindo ao VOOF v2!',
+            short_description: 'Agora com suporte a vídeos, múltiplas categorias e analytics!',
+            full_text: 'O VOOF foi atualizado para v2!\n\nNovidades:\n- Posts em vídeo\n- Múltiplas categorias por post\n- Sistema de analytics\n- Swipe lateral para fechar\n\nCrie posts no admin.html para ver tudo funcionando!',
             category: 'tecnologia',
+            categories: ['tecnologia', 'ia'],
+            post_type: 'text',
             cover_image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
             gallery_images: ['https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'],
             author: 'VOOF Team',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            view_count: 0
         }
     ];
     
@@ -266,11 +373,12 @@ function searchPosts(searchTerm) {
     const term = searchTerm.toLowerCase().trim();
     
     currentPosts = allPosts.filter(post => {
+        const categories = post.categories || [post.category];
         return (
             post.title.toLowerCase().includes(term) ||
             post.short_description.toLowerCase().includes(term) ||
             post.full_text.toLowerCase().includes(term) ||
-            post.category.toLowerCase().includes(term) ||
+            categories.some(cat => cat.toLowerCase().includes(term)) ||
             (post.author && post.author.toLowerCase().includes(term))
         );
     });
@@ -293,7 +401,7 @@ function toggleSearchInput() {
 
 // Initialize app
 async function init() {
-    console.log('🚀 Inicializando VOOF...');
+    console.log('🚀 Inicializando VOOF v2...');
     
     setTimeout(() => {
         document.getElementById('loading-screen').classList.add('hidden');
@@ -382,7 +490,7 @@ async function init() {
         closeBtnContainer.style.display = 'none';
     }
 
-    console.log('✅ VOOF inicializado com sucesso!');
+    console.log('✅ VOOF v2 inicializado com sucesso!');
 }
 
 if (document.readyState === 'loading') {
