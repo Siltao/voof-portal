@@ -1,9 +1,7 @@
 // ========================================
-// VOOF - Sistema Administrativo v2
-// Com edição, permissões e gerenciamento
+// VOOF Admin v2 - Sistema Completo
 // ========================================
 
-// CONFIGURAÇÃO - SUBSTITUA PELAS SUAS CREDENCIAIS
 const SUPABASE_URL = 'https://lbvtpawkufemglkaepqb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxidnRwYXdrdWZlbWdsa2FlcHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDg2MTksImV4cCI6MjA4NjIyNDYxOX0.knLhtuTd0DekAMFwlC3QjapFjEiXmcuuWG4AstzxoKQ';
 
@@ -17,7 +15,7 @@ let currentUserPermissions = null;
 let editingPostId = null;
 
 // ========================================
-// SISTEMA DE PERMISSÕES
+// PERMISSÕES
 // ========================================
 
 async function loadUserPermissions() {
@@ -46,7 +44,6 @@ async function loadUserPermissions() {
             currentUserPermissions = data;
         }
 
-        console.log('Permissões:', currentUserPermissions);
         updateUIBasedOnPermissions();
     } catch (error) {
         console.error('Erro ao carregar permissões:', error);
@@ -116,13 +113,12 @@ async function login(email, password) {
         await loadUserPermissions();
         showAdminPanel();
         loadPendingPosts();
-        showAlert('login-alert', 'Login realizado com sucesso!', 'success');
+        showAlert('login-alert', 'Login realizado!', 'success');
     } catch (error) {
         console.error('Login error:', error);
-        let errorMessage = error.message;
-        if (error.message.includes('Invalid login credentials')) {
-            errorMessage = 'Email ou senha incorretos';
-        }
+        let errorMessage = error.message.includes('Invalid login credentials') 
+            ? 'Email ou senha incorretos' 
+            : error.message;
         showAlert('login-alert', 'Erro: ' + errorMessage, 'error');
     }
 }
@@ -157,7 +153,7 @@ async function loadPendingPosts() {
         document.getElementById('pending-posts').innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📝</div>
-                <p class="empty-state-text">Nenhum post pendente de aprovação</p>
+                <p class="empty-state-text">Nenhum post pendente</p>
             </div>
         `;
     }
@@ -178,7 +174,7 @@ async function loadApprovedPosts() {
         document.getElementById('approved-posts').innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📰</div>
-                <p class="empty-state-text">Nenhum post publicado ainda</p>
+                <p class="empty-state-text">Nenhum post publicado</p>
             </div>
         `;
     }
@@ -204,14 +200,20 @@ function renderPosts(containerId, posts, status) {
             ${posts.map(post => {
                 const canEdit = isAdmin() || (post.author === currentUser.email.split('@')[0] && status === 'pending');
                 const canDelete = isAdmin();
+                const categories = post.categories || [post.category];
                 
                 return `
                 <div class="post-card">
-                    <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400'}" 
-                         alt="${post.title}" 
-                         class="post-image">
+                    ${post.post_type === 'video' ? `
+                        <video src="${post.video_url}" class="post-image" muted></video>
+                    ` : `
+                        <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400'}" 
+                             alt="${post.title}" 
+                             class="post-image">
+                    `}
                     <div class="post-content">
-                        <span class="post-category">${post.category}</span>
+                        <span class="post-category">${categories[0]}</span>
+                        ${categories.length > 1 ? `<span class="post-category" style="opacity: 0.7; font-size: 0.7rem;">+${categories.length - 1}</span>` : ''}
                         <h3 class="post-title">${post.title}</h3>
                         <p class="post-description">${post.short_description}</p>
                         <div class="post-meta">
@@ -221,9 +223,14 @@ function renderPosts(containerId, posts, status) {
                                 ${status === 'pending' ? 'Pendente' : 'Publicado'}
                             </span>
                         </div>
+                        ${isAdmin() && post.view_count ? `
+                            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-primary);">
+                                👁️ ${post.view_count} visualizações
+                            </div>
+                        ` : ''}
                         ${post.scheduled_publish_at ? `
                             <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-warning);">
-                                📅 Agendado: ${formatDateTime(post.scheduled_publish_at)}
+                                📅 ${formatDateTime(post.scheduled_publish_at)}
                             </div>
                         ` : ''}
                         <div class="post-actions">
@@ -256,12 +263,8 @@ function renderPosts(containerId, posts, status) {
 // ========================================
 
 async function approvePost(postId) {
-    if (!isAdmin()) {
-        alert('Apenas administradores podem aprovar posts');
-        return;
-    }
-
-    if (!confirm('Deseja aprovar este post?')) return;
+    if (!isAdmin()) return alert('Apenas administradores podem aprovar');
+    if (!confirm('Aprovar este post?')) return;
 
     try {
         const { error } = await supabaseClient
@@ -274,22 +277,18 @@ async function approvePost(postId) {
 
         if (error) throw error;
 
-        alert('Post aprovado com sucesso!');
+        alert('Post aprovado!');
         loadPendingPosts();
         loadApprovedPosts();
     } catch (error) {
-        console.error('Error approving post:', error);
-        alert('Erro ao aprovar post: ' + error.message);
+        console.error('Error:', error);
+        alert('Erro ao aprovar: ' + error.message);
     }
 }
 
 async function deletePost(postId) {
-    if (!isAdmin()) {
-        alert('Apenas administradores podem deletar posts');
-        return;
-    }
-
-    if (!confirm('Deseja realmente excluir este post? Esta ação não pode ser desfeita.')) return;
+    if (!isAdmin()) return alert('Apenas administradores podem deletar');
+    if (!confirm('Deletar este post? Não pode ser desfeito!')) return;
 
     try {
         const { error } = await supabaseClient
@@ -299,12 +298,12 @@ async function deletePost(postId) {
 
         if (error) throw error;
 
-        alert('Post excluído com sucesso!');
+        alert('Post excluído!');
         loadPendingPosts();
         loadApprovedPosts();
     } catch (error) {
-        console.error('Error deleting post:', error);
-        alert('Erro ao excluir post: ' + error.message);
+        console.error('Error:', error);
+        alert('Erro ao excluir: ' + error.message);
     }
 }
 
@@ -320,29 +319,37 @@ async function editPost(postId) {
 
         editingPostId = postId;
         
-        // Preencher formulário
         document.getElementById('post-id').value = postId;
-        document.getElementById('post-category').value = data.category;
+        document.getElementById('post-type').value = data.post_type || 'text';
+        
+        // Categorias
+        const categoriesSelect = document.getElementById('post-categories');
+        const categories = data.categories || [data.category];
+        Array.from(categoriesSelect.options).forEach(option => {
+            option.selected = categories.includes(option.value);
+        });
+        
         document.getElementById('post-title').value = data.title;
         document.getElementById('post-short-desc').value = data.short_description;
         document.getElementById('post-full-text').value = data.full_text;
-        document.getElementById('post-cover-image').value = data.cover_image;
+        document.getElementById('post-cover-image').value = data.cover_image || '';
+        document.getElementById('post-video-url').value = data.video_url || '';
         document.getElementById('post-gallery-images').value = data.gallery_images ? data.gallery_images.join('\n') : '';
         document.getElementById('post-co-authors').value = data.co_authors ? data.co_authors.join(', ') : '';
         document.getElementById('post-scheduled').value = data.scheduled_publish_at ? formatDateTimeInput(data.scheduled_publish_at) : '';
         document.getElementById('post-editor-notes').value = data.editor_notes || '';
 
-        // Atualizar UI
+        togglePostTypeFields();
+        
         document.getElementById('form-title').textContent = 'Editar Notícia';
         document.getElementById('submit-btn').textContent = 'Salvar Alterações';
         document.getElementById('cancel-edit-btn').style.display = 'inline-block';
 
-        // Mudar para aba de criar/editar
         switchTab('create');
         window.scrollTo(0, 0);
     } catch (error) {
-        console.error('Error loading post:', error);
-        alert('Erro ao carregar post: ' + error.message);
+        console.error('Error:', error);
+        alert('Erro ao carregar: ' + error.message);
     }
 }
 
@@ -353,6 +360,7 @@ function cancelEdit() {
     document.getElementById('form-title').textContent = 'Criar Nova Notícia';
     document.getElementById('submit-btn').textContent = 'Publicar Notícia';
     document.getElementById('cancel-edit-btn').style.display = 'none';
+    togglePostTypeFields();
 }
 
 async function createOrUpdatePost(postData) {
@@ -360,7 +368,6 @@ async function createOrUpdatePost(postData) {
         const postId = document.getElementById('post-id').value;
         
         if (postId) {
-            // Atualizar
             const { error } = await supabaseClient
                 .from('posts')
                 .update(postData)
@@ -368,18 +375,18 @@ async function createOrUpdatePost(postData) {
 
             if (error) throw error;
 
-            showAlert('create-alert', 'Notícia atualizada com sucesso!', 'success');
+            showAlert('create-alert', 'Atualizado!', 'success');
             cancelEdit();
         } else {
-            // Criar novo
             const { error } = await supabaseClient
                 .from('posts')
                 .insert([postData]);
 
             if (error) throw error;
 
-            showAlert('create-alert', 'Notícia criada com sucesso!', 'success');
+            showAlert('create-alert', 'Criado!', 'success');
             document.getElementById('create-post-form').reset();
+            togglePostTypeFields();
         }
 
         setTimeout(() => {
@@ -387,12 +394,10 @@ async function createOrUpdatePost(postData) {
             loadApprovedPosts();
         }, 1000);
     } catch (error) {
-        console.error('Error creating/updating post:', error);
+        console.error('Error:', error);
         showAlert('create-alert', 'Erro: ' + error.message, 'error');
     }
 }
-
-// Continua...
 
 // ========================================
 // GERENCIAMENTO DE USUÁRIOS
@@ -408,10 +413,9 @@ async function loadUsers() {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-
         renderUsers(data || []);
     } catch (error) {
-        console.error('Error loading users:', error);
+        console.error('Error:', error);
     }
 }
 
@@ -422,7 +426,7 @@ function renderUsers(users) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">👥</div>
-                <p class="empty-state-text">Nenhum usuário cadastrado</p>
+                <p class="empty-state-text">Nenhum usuário</p>
             </div>
         `;
         return;
@@ -435,7 +439,6 @@ function renderUsers(users) {
                     <th>Email</th>
                     <th>Nome</th>
                     <th>Função</th>
-                    <th>Criado em</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -449,7 +452,6 @@ function renderUsers(users) {
                                 ${user.role === 'admin' ? '👑 Admin' : '✍️ Escritor'}
                             </span>
                         </td>
-                        <td>${formatDate(user.created_at)}</td>
                         <td>
                             ${user.user_id !== currentUser.id ? `
                                 ${user.role === 'writer' ? `
@@ -461,6 +463,9 @@ function renderUsers(users) {
                                         ⬇️ Rebaixar
                                     </button>
                                 `}
+                                <button class="btn btn-secondary btn-small" onclick="changeUserPassword('${user.user_id}', '${user.email}')">
+                                    🔑 Senha
+                                </button>
                                 <button class="btn btn-danger btn-small" onclick="deleteUser('${user.user_id}')">
                                     🗑️ Remover
                                 </button>
@@ -474,12 +479,8 @@ function renderUsers(users) {
 }
 
 async function promoteUser(userId) {
-    if (!isAdmin()) {
-        alert('Apenas administradores podem promover usuários');
-        return;
-    }
-
-    if (!confirm('Deseja promover este usuário a Administrador?')) return;
+    if (!isAdmin()) return;
+    if (!confirm('Promover a Admin?')) return;
 
     try {
         const { error } = await supabaseClient
@@ -488,22 +489,16 @@ async function promoteUser(userId) {
             .eq('user_id', userId);
 
         if (error) throw error;
-
-        alert('Usuário promovido com sucesso!');
+        alert('Promovido!');
         loadUsers();
     } catch (error) {
-        console.error('Error promoting user:', error);
-        alert('Erro ao promover usuário: ' + error.message);
+        alert('Erro: ' + error.message);
     }
 }
 
 async function demoteUser(userId) {
-    if (!isAdmin()) {
-        alert('Apenas administradores podem rebaixar usuários');
-        return;
-    }
-
-    if (!confirm('Deseja rebaixar este administrador a Escritor?')) return;
+    if (!isAdmin()) return;
+    if (!confirm('Rebaixar a Escritor?')) return;
 
     try {
         const { error } = await supabaseClient
@@ -512,120 +507,91 @@ async function demoteUser(userId) {
             .eq('user_id', userId);
 
         if (error) throw error;
-
-        alert('Usuário rebaixado com sucesso!');
+        alert('Rebaixado!');
         loadUsers();
     } catch (error) {
-        console.error('Error demoting user:', error);
-        alert('Erro ao rebaixar usuário: ' + error.message);
+        alert('Erro: ' + error.message);
     }
 }
 
 async function deleteUser(userId) {
-    if (!isAdmin()) {
-        alert('Apenas administradores podem deletar usuários');
-        return;
-    }
-
-    if (!confirm('Deseja realmente remover este usuário? Esta ação não pode ser desfeita.')) return;
+    if (!isAdmin()) return;
+    if (!confirm('Remover usuário?')) return;
 
     try {
-        // Primeiro deletar da tabela user_permissions
-        const { error: permError } = await supabaseClient
+        const { error } = await supabaseClient
             .from('user_permissions')
             .delete()
             .eq('user_id', userId);
 
-        if (permError) throw permError;
-
-        alert('Usuário removido com sucesso!');
+        if (error) throw error;
+        alert('Removido!');
         loadUsers();
     } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Erro ao remover usuário: ' + error.message);
+        alert('Erro: ' + error.message);
     }
 }
 
-function showAddUserModal() {
-    document.getElementById('add-user-modal').classList.add('active');
-}
-
-function closeAddUserModal() {
-    document.getElementById('add-user-modal').classList.remove('active');
-    document.getElementById('add-user-form').reset();
-    document.getElementById('add-user-alert').innerHTML = '';
-}
-
-async function addNewUser(email, password, displayName, role) {
-    try {
-        // Note: This creates the auth user via Supabase Admin API
-        // In a real app, you'd need to use Supabase Admin SDK or a backend function
-        // For now, we'll show a message
-        showAlert('add-user-alert', 'IMPORTANTE: Para criar usuários, use o Supabase Authentication > Users > Add User. Depois, você pode gerenciar as funções aqui.', 'error');
-        
-        // Alternative: Just add to permissions table if user already exists
-        // This is a workaround - ideally you'd create the auth user too
-        
-    } catch (error) {
-        console.error('Error adding user:', error);
-        showAlert('add-user-alert', 'Erro ao adicionar usuário: ' + error.message, 'error');
-    }
+async function changeUserPassword(userId, email) {
+    const pwd = prompt(`Nova senha para ${email} (mín. 6):`);
+    if (!pwd || pwd.length < 6) return alert('Mínimo 6 caracteres');
+    alert('Use Supabase Dashboard:\nAuthentication → Users → usuário → Reset Password');
 }
 
 // ========================================
 // UTILIDADES
 // ========================================
 
+function togglePostTypeFields() {
+    const type = document.getElementById('post-type')?.value || 'text';
+    const videoGroup = document.getElementById('video-url-group');
+    const imageGroup = document.getElementById('cover-image-group');
+    const galleryGroup = document.getElementById('gallery-images-group');
+    const coverImg = document.getElementById('post-cover-image');
+    const videoUrl = document.getElementById('post-video-url');
+    
+    if (type === 'video') {
+        if (videoGroup) videoGroup.style.display = 'block';
+        if (imageGroup) imageGroup.style.display = 'none';
+        if (galleryGroup) galleryGroup.style.display = 'none';
+        if (coverImg) coverImg.required = false;
+        if (videoUrl) videoUrl.required = true;
+    } else {
+        if (videoGroup) videoGroup.style.display = 'none';
+        if (imageGroup) imageGroup.style.display = 'block';
+        if (galleryGroup) galleryGroup.style.display = 'block';
+        if (coverImg) coverImg.required = true;
+        if (videoUrl) videoUrl.required = false;
+    }
+}
+
 function showAlert(containerId, message, type) {
     const container = document.getElementById(containerId);
-    container.innerHTML = `
-        <div class="alert alert-${type}">
-            ${message}
-        </div>
-    `;
-    
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, 5000);
+    container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => { container.innerHTML = ''; }, 5000);
 }
 
 function switchTab(tabName) {
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
+    if (targetTab) targetTab.classList.add('active');
 
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     const contentId = tabName === 'users' ? 'users-tab-content' : `${tabName}-tab`;
     const targetContent = document.getElementById(contentId);
-    if (targetContent) {
-        targetContent.classList.add('active');
-    }
+    if (targetContent) targetContent.classList.add('active');
 
-    if (tabName === 'pending') {
-        loadPendingPosts();
-    } else if (tabName === 'approved') {
-        loadApprovedPosts();
-    } else if (tabName === 'users') {
-        loadUsers();
-    }
+    if (tabName === 'pending') loadPendingPosts();
+    else if (tabName === 'approved') loadApprovedPosts();
+    else if (tabName === 'users') loadUsers();
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleDateString('pt-BR');
 }
 
 function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-BR');
+    return new Date(dateString).toLocaleString('pt-BR');
 }
 
 function formatDateTimeInput(dateString) {
@@ -638,6 +604,17 @@ function formatDateTimeInput(dateString) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+// Funções globais
+window.approvePost = approvePost;
+window.deletePost = deletePost;
+window.editPost = editPost;
+window.cancelEdit = cancelEdit;
+window.promoteUser = promoteUser;
+window.demoteUser = demoteUser;
+window.deleteUser = deleteUser;
+window.changeUserPassword = changeUserPassword;
+window.togglePostTypeFields = togglePostTypeFields;
+
 // ========================================
 // INICIALIZAÇÃO
 // ========================================
@@ -645,12 +622,12 @@ function formatDateTimeInput(dateString) {
 async function init() {
     await checkAuth();
 
-    // Event listeners
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        await login(email, password);
+        await login(
+            document.getElementById('login-email').value,
+            document.getElementById('login-password').value
+        );
     });
 
     document.getElementById('logout-btn').addEventListener('click', logout);
@@ -658,15 +635,18 @@ async function init() {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
             const tabName = e.target.dataset.tab;
-            if (tabName) {
-                switchTab(tabName);
-            }
+            if (tabName) switchTab(tabName);
         });
     });
 
     document.getElementById('create-post-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const categoriesSelect = document.getElementById('post-categories');
+        const selectedCategories = Array.from(categoriesSelect.selectedOptions)
+            .map(o => o.value)
+            .slice(0, 3);
+
         const galleryImagesText = document.getElementById('post-gallery-images').value;
         const galleryImages = galleryImagesText
             .split('\n')
@@ -680,59 +660,36 @@ async function init() {
             .filter(email => email.length > 0);
 
         const scheduledPublish = document.getElementById('post-scheduled').value;
-        
+        const postType = document.getElementById('post-type').value;
 
-const categoriesSelect = document.getElementById('post-categories');
-const selectedCategories = categoriesSelect ? 
-    Array.from(categoriesSelect.selectedOptions).map(o => o.value).slice(0, 3) :
-    [document.getElementById('post-category')?.value || 'tecnologia'];
         const postData = {
-    categories: selectedCategories,
-    category: selectedCategories[0], // Compatibilidade
-    post_type: document.getElementById('post-type')?.value || 'text',
-    video_url: document.getElementById('post-video-url')?.value || null,
-    title: document.getElementById('post-title').value,
-    short_description: document.getElementById('post-short-desc').value,
-    full_text: document.getElementById('post-full-text').value,
-    cover_image: document.getElementById('post-cover-image')?.value || null,
-    gallery_images: galleryImages.length > 0 ? galleryImages : null,
-    co_authors: coAuthors.length > 0 ? coAuthors : null,
-    scheduled_publish_at: scheduledPublish || null,
-    editor_notes: document.getElementById('post-editor-notes')?.value || null,
-    author: currentUserPermissions?.display_name || currentUser.email.split('@')[0],
-    status: isAdmin() ? 'approved' : 'pending', // IMPORTANTE!
-    created_at: new Date().toISOString()
-};
+            categories: selectedCategories,
+            category: selectedCategories[0],
+            post_type: postType,
+            video_url: postType === 'video' ? document.getElementById('post-video-url').value : null,
+            cover_image: postType === 'video' 
+                ? document.getElementById('post-video-url').value 
+                : document.getElementById('post-cover-image').value,
+            title: document.getElementById('post-title').value,
+            short_description: document.getElementById('post-short-desc').value,
+            full_text: document.getElementById('post-full-text').value,
+            gallery_images: galleryImages.length > 0 ? galleryImages : null,
+            co_authors: coAuthors.length > 0 ? coAuthors : null,
+            scheduled_publish_at: scheduledPublish || null,
+            editor_notes: document.getElementById('post-editor-notes').value || null,
+            author: currentUserPermissions?.display_name || currentUser.email.split('@')[0],
+            status: isAdmin() ? 'approved' : 'pending',
+            created_at: new Date().toISOString()
+        };
 
-if (isAdmin() && !scheduledPublish) {
-    postData.published_at = new Date().toISOString();
-}
+        if (isAdmin() && !scheduledPublish) {
+            postData.published_at = new Date().toISOString();
+        }
 
         await createOrUpdatePost(postData);
     });
-
-    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('new-user-email').value;
-        const password = document.getElementById('new-user-password').value;
-        const displayName = document.getElementById('new-user-display-name').value;
-        const role = document.getElementById('new-user-role').value;
-        await addNewUser(email, password, displayName, role);
-    });
 }
 
-// Funções globais
-window.approvePost = approvePost;
-window.deletePost = deletePost;
-window.editPost = editPost;
-window.cancelEdit = cancelEdit;
-window.promoteUser = promoteUser;
-window.demoteUser = demoteUser;
-window.deleteUser = deleteUser;
-window.showAddUserModal = showAddUserModal;
-window.closeAddUserModal = closeAddUserModal;
-
-// Start app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
