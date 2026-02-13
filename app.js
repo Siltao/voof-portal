@@ -22,8 +22,14 @@ function getMediaType(url) {
     return 'image';
 }
 
-// Extrair ID do YouTube
+// Extrair ID do YouTube (incluindo Shorts)
 function getYouTubeID(url) {
+    // YouTube Shorts
+    if (url.includes('/shorts/')) {
+        const match = url.match(/\/shorts\/([^?&]+)/);
+        return match ? match[1] : null;
+    }
+    // YouTube normal
     const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
     return match ? match[1] : null;
 }
@@ -56,7 +62,26 @@ function toggleMute(event, postId) {
     }
 }
 
+// Toggle mute do YouTube (iframe)
+function toggleYouTubeMute(event, postId) {
+    event.stopPropagation();
+    const iframe = event.target.previousElementSibling;
+    const btn = event.target;
+    
+    if (iframe && iframe.tagName === 'IFRAME') {
+        const currentSrc = iframe.src;
+        if (currentSrc.includes('mute=1')) {
+            iframe.src = currentSrc.replace('mute=1', 'mute=0');
+            btn.textContent = '🔊';
+        } else {
+            iframe.src = currentSrc.replace('mute=0', 'mute=1');
+            btn.textContent = '🔇';
+        }
+    }
+}
+
 window.toggleMute = toggleMute;
+window.toggleYouTubeMute = toggleYouTubeMute;
 
 // Load posts from Supabase
 async function loadPosts(category = 'all') {
@@ -120,20 +145,67 @@ function renderFeed() {
         const categories = post.categories || [post.category];
         const categoryDisplay = categories[0];
         
+        let videoHTML = '';
+        if (isVideo && post.video_url) {
+            // Detectar tipo de vídeo
+            if (post.video_url.includes('youtube.com') || post.video_url.includes('youtu.be')) {
+                // YouTube
+                let videoId = getYouTubeID(post.video_url);
+                videoHTML = `
+                    <iframe 
+                        class="story-video" 
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen>
+                    </iframe>
+                    <button class="mute-btn" onclick="toggleYouTubeMute(event, '${post.id}')">🔇</button>
+                `;
+            } else if (post.video_url.includes('tiktok.com')) {
+                // TikTok - extrair ID
+                const tiktokMatch = post.video_url.match(/video\/(\d+)/);
+                const videoId = tiktokMatch ? tiktokMatch[1] : '';
+                videoHTML = `
+                    <iframe 
+                        class="story-video" 
+                        src="https://www.tiktok.com/embed/v2/${videoId}"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else if (post.video_url.includes('vimeo.com')) {
+                // Vimeo
+                const videoId = getVimeoID(post.video_url);
+                videoHTML = `
+                    <iframe 
+                        class="story-video" 
+                        src="https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&controls=0"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else {
+                // MP4 direto
+                videoHTML = `
+                    <video 
+                        class="story-video" 
+                        src="${post.video_url}" 
+                        playsinline 
+                        autoplay 
+                        muted 
+                        loop
+                        data-post-id="${post.id}">
+                    </video>
+                    <button class="mute-btn" onclick="toggleMute(event, '${post.id}')">🔇</button>
+                `;
+            }
+        }
+        
         return `
         <div class="story-card" data-post-id="${post.id}" data-index="${index}">
-            ${isVideo ? `
-                <video 
-                    class="story-video" 
-                    src="${post.video_url}" 
-                    playsinline 
-                    autoplay 
-                    muted 
-                    loop
-                    data-post-id="${post.id}">
-                </video>
-                <button class="mute-btn" onclick="toggleMute(event, '${post.id}')">🔇</button>
-            ` : `
+            ${isVideo ? videoHTML : `
                 <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'}" 
                      alt="${post.title}" 
                      class="story-image"
@@ -223,16 +295,58 @@ async function openArticle(postId) {
 
         let galleryHTML = '';
         if (post.post_type === 'video') {
-            galleryHTML = `
-                <div class="article-gallery">
+            let videoEmbed = '';
+            
+            if (post.video_url.includes('youtube.com') || post.video_url.includes('youtu.be')) {
+                const videoId = getYouTubeID(post.video_url);
+                videoEmbed = `
+                    <iframe 
+                        class="gallery-video" 
+                        src="https://www.youtube.com/embed/${videoId}?rel=0"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        style="width: 100%; height: 60vh;">
+                    </iframe>
+                `;
+            } else if (post.video_url.includes('tiktok.com')) {
+                const tiktokMatch = post.video_url.match(/video\/(\d+)/);
+                const videoId = tiktokMatch ? tiktokMatch[1] : '';
+                videoEmbed = `
+                    <iframe 
+                        class="gallery-video" 
+                        src="https://www.tiktok.com/embed/v2/${videoId}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        style="width: 100%; height: 60vh;">
+                    </iframe>
+                `;
+            } else if (post.video_url.includes('vimeo.com')) {
+                const videoId = getVimeoID(post.video_url);
+                videoEmbed = `
+                    <iframe 
+                        class="gallery-video" 
+                        src="https://player.vimeo.com/video/${videoId}"
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen
+                        style="width: 100%; height: 60vh;">
+                    </iframe>
+                `;
+            } else {
+                videoEmbed = `
                     <video 
                         class="gallery-video" 
                         src="${post.video_url}" 
                         controls
-                        playsinline>
+                        playsinline
+                        style="width: 100%; max-height: 60vh;">
                     </video>
-                </div>
-            `;
+                `;
+            }
+            
+            galleryHTML = `<div class="article-gallery">${videoEmbed}</div>`;
         } else if (post.gallery_images && post.gallery_images.length > 0) {
             galleryHTML = `
                 <div class="article-gallery">
