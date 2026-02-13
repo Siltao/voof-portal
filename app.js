@@ -70,7 +70,8 @@ async function loadPosts(category = 'all') {
             .order('created_at', { ascending: false });
 
         if (category !== 'all') {
-            query = query.contains('categories', [category]);
+            // Suporta tanto categories (array) quanto category (string)
+            query = query.or(`categories.cs.{${category}},category.eq.${category}`);
         }
 
         const { data, error } = await query;
