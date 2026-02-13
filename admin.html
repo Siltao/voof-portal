@@ -478,9 +478,16 @@
                             <input type="hidden" id="post-id">
                             
                             <div class="form-group">
-                                <label class="form-label">Categoria</label>
-                                <select class="form-select" id="post-category" required>
-                                    <option value="">Selecione...</option>
+                                <label class="form-label">Tipo de Post</label>
+                                <select class="form-select" id="post-type" onchange="togglePostTypeFields()">
+                                    <option value="text">📝 Texto/Imagem</option>
+                                    <option value="video">📹 Vídeo</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Categorias (máximo 3)</label>
+                                <select class="form-select" id="post-categories" multiple size="9" required>
                                     <option value="filmes">Filmes</option>
                                     <option value="series">Séries</option>
                                     <option value="xbox">Xbox</option>
@@ -489,7 +496,11 @@
                                     <option value="pc">PC Gaming</option>
                                     <option value="tecnologia">Tecnologia</option>
                                     <option value="anime">Anime</option>
+                                    <option value="ia">IA</option>
                                 </select>
+                                <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
+                                    Segure Ctrl (Cmd no Mac) para selecionar múltiplas categorias
+                                </small>
                             </div>
 
                             <div class="form-group">
@@ -507,12 +518,20 @@
                                 <textarea class="form-textarea" id="post-full-text" style="min-height: 250px;" required></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" id="cover-image-group">
                                 <label class="form-label">URL da Imagem de Capa</label>
                                 <input type="url" class="form-input" id="post-cover-image" placeholder="https://..." required>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" id="video-url-group" style="display: none;">
+                                <label class="form-label">URL do Vídeo</label>
+                                <input type="url" class="form-input" id="post-video-url" placeholder="https://...">
+                                <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
+                                    Suporta: YouTube, Vimeo, MP4 direto
+                                </small>
+                            </div>
+
+                            <div class="form-group" id="gallery-images-group">
                                 <label class="form-label">URLs das Imagens da Galeria (uma por linha)</label>
                                 <textarea class="form-textarea" id="post-gallery-images" placeholder="https://image1.jpg
 https://image2.jpg"></textarea>
