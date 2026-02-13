@@ -680,25 +680,33 @@ async function init() {
             .filter(email => email.length > 0);
 
         const scheduledPublish = document.getElementById('post-scheduled').value;
+        
 
+const categoriesSelect = document.getElementById('post-categories');
+const selectedCategories = categoriesSelect ? 
+    Array.from(categoriesSelect.selectedOptions).map(o => o.value).slice(0, 3) :
+    [document.getElementById('post-category')?.value || 'tecnologia'];
         const postData = {
-            category: document.getElementById('post-category').value,
-            title: document.getElementById('post-title').value,
-            short_description: document.getElementById('post-short-desc').value,
-            full_text: document.getElementById('post-full-text').value,
-            cover_image: document.getElementById('post-cover-image').value,
-            gallery_images: galleryImages.length > 0 ? galleryImages : null,
-            co_authors: coAuthors.length > 0 ? coAuthors : null,
-            scheduled_publish_at: scheduledPublish || null,
-            editor_notes: document.getElementById('post-editor-notes').value || null,
-            author: currentUserPermissions.display_name || currentUser.email.split('@')[0],
-            status: isAdmin() ? 'approved' : 'pending',
-            created_at: new Date().toISOString()
-        };
+    categories: selectedCategories,
+    category: selectedCategories[0], // Compatibilidade
+    post_type: document.getElementById('post-type')?.value || 'text',
+    video_url: document.getElementById('post-video-url')?.value || null,
+    title: document.getElementById('post-title').value,
+    short_description: document.getElementById('post-short-desc').value,
+    full_text: document.getElementById('post-full-text').value,
+    cover_image: document.getElementById('post-cover-image')?.value || null,
+    gallery_images: galleryImages.length > 0 ? galleryImages : null,
+    co_authors: coAuthors.length > 0 ? coAuthors : null,
+    scheduled_publish_at: scheduledPublish || null,
+    editor_notes: document.getElementById('post-editor-notes')?.value || null,
+    author: currentUserPermissions?.display_name || currentUser.email.split('@')[0],
+    status: isAdmin() ? 'approved' : 'pending', // IMPORTANTE!
+    created_at: new Date().toISOString()
+};
 
-        if (isAdmin() && !scheduledPublish) {
-            postData.published_at = new Date().toISOString();
-        }
+if (isAdmin() && !scheduledPublish) {
+    postData.published_at = new Date().toISOString();
+}
 
         await createOrUpdatePost(postData);
     });
