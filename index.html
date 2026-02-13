@@ -219,6 +219,18 @@
             left: 0;
         }
 
+        /* iframe (YouTube, TikTok, Vimeo) */
+        .story-card iframe {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: none;
+            pointer-events: none; /* Evita que iframe capture clicks */
+        }
+
         .mute-btn {
             position: absolute;
             top: 1rem;
@@ -236,6 +248,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            pointer-events: all; /* Botão sempre clicável */
         }
 
         .mute-btn:hover {
