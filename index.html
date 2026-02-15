@@ -548,6 +548,186 @@
                 transform: rotate(90deg);
             }
         }
+
+       
+/* Animação de Like (Double Tap) */
+.like-heart-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5rem;
+    pointer-events: none;
+    z-index: 999;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+}
+
+/* Barra de Reações */
+.reactions-bar {
+    margin: 3rem 0 2rem 0;
+    padding: 2rem;
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+}
+
+.reactions-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.reactions-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.reaction-btn {
+    background: var(--bg-dark);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Outfit', sans-serif;
+}
+
+.reaction-btn:hover {
+    border-color: var(--accent-primary);
+    background: rgba(0, 255, 157, 0.05);
+    transform: translateY(-2px);
+}
+
+.reaction-btn:active {
+    transform: scale(0.95);
+}
+
+.reaction-emoji {
+    font-size: 2rem;
+}
+
+.reaction-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.reaction-count {
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+/* Feedback de Reação */
+.reaction-feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 6rem;
+    pointer-events: none;
+    z-index: 10000;
+    animation: reactionPop 2s ease-out forwards;
+}
+
+@keyframes reactionPop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -80%) scale(1.5);
+    }
+}
+
+/* Copyright Footer */
+.article-copyright {
+    margin-top: 3rem;
+    padding: 2rem;
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.article-copyright p {
+    margin: 0.5rem 0;
+}
+
+/* Footer do Site */
+.site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    z-index: 50;
+}
+
+.site-footer.with-nav {
+    bottom: 70px;
+}
+
+@media (max-width: 768px) {
+    .site-footer {
+        bottom: 70px;
+    }
+    
+    .reactions-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .reaction-emoji {
+        font-size: 1.5rem;
+    }
+    
+    .reaction-label {
+        font-size: 0.75rem;
+    }
+}
+
+/* Botão de Compartilhar no Header */
+.share-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-btn:hover {
+    color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
+.share-btn:active {
+    transform: scale(0.9);
+}
+
     </style>
 </head>
 <body>
@@ -595,9 +775,14 @@
     <div id="feed-container"></div>
 
     <div id="article-modal">
-        <div class="article-header">
-            <div class="logo">VOOF</div>
-        </div>
+        ```html
+    <div class="article-header">
+    <div class="logo">VOOF</div>
+    <button class="share-btn" onclick="shareArticle(currentArticle?.id, currentArticle?.title)" title="Compartilhar">
+        🔗
+    </button>
+    </div>
+```
         <div id="article-content"></div>
     </div>
 
@@ -607,5 +792,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
     <script src="app.js"></script>
+    ```html
+    <!-- Copyright Footer -->
+    <div class="site-footer">
+    © 2026 VOOF. Todos os direitos reservados.
+    </div>
+    ```
+
 </body>
 </html>
