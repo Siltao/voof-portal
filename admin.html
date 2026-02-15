@@ -3,148 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOOF - Painel Administrativo v2</title>
+    <title>VOOF - Painel Administrativo v3</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        ```css
-/* Analytics Styles */
-.analytics-filters {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.analytics-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.summary-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
-}
-
-.summary-icon {
-    font-size: 2rem;
-}
-
-.summary-info {
-    flex: 1;
-}
-
-.summary-label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.25rem;
-}
-
-.summary-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-}
-
-.analytics-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--bg-card);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.analytics-table thead {
-    background: var(--bg-dark);
-}
-
-.analytics-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 1px solid var(--border-subtle);
-    white-space: nowrap;
-}
-
-.analytics-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.analytics-table tbody tr {
-    transition: background 0.2s ease;
-}
-
-.analytics-table tbody tr:hover {
-    background: rgba(0, 255, 157, 0.05);
-}
-
-.post-title-cell {
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.metric-cell {
-    font-weight: 600;
-    color: var(--accent-primary);
-}
-
-.reactions-breakdown {
-    display: flex;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-}
-
-.reaction-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-@media (max-width: 768px) {
-    .analytics-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .analytics-summary {
-        grid-template-columns: 1fr;
-    }
-    
-    .analytics-table {
-        display: block;
-        overflow-x: auto;
-    }
-}
-```
-    
         :root {
             --bg-dark: #0a0a0a;
             --bg-card: #121212;
@@ -550,11 +411,147 @@
             color: var(--accent-secondary);
         }
 
+        /* Analytics Styles */
+        .analytics-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .analytics-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .summary-icon {
+            font-size: 2rem;
+        }
+
+        .summary-info {
+            flex: 1;
+        }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .analytics-table thead {
+            background: var(--bg-dark);
+        }
+
+        .analytics-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+        }
+
+        .analytics-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .analytics-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .analytics-table tbody tr:hover {
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .post-title-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .metric-cell {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .reactions-breakdown {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .reaction-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 1rem; }
             .posts-grid { grid-template-columns: 1fr; }
             .tabs { overflow-x: auto; }
             .tab { padding: 1rem; white-space: nowrap; }
+            
+            .analytics-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .analytics-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-table {
+                display: block;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
@@ -591,10 +588,10 @@
 
         <div class="container">
             <div class="tabs">
-                <button class="tab" data-tab="create">Criar Notícia</button>
                 <button class="tab active" data-tab="pending">Pendentes de Aprovação</button>
                 <button class="tab" data-tab="approved">Publicados</button>
-                <div class="tab" id="analytics-tab" data-tab="analytics">📊 Analytics</div>
+                <button class="tab" data-tab="create">Criar Notícia</button>
+                <button class="tab" data-tab="analytics" id="analytics-tab">📊 Analytics</button>
                 <button class="tab" data-tab="users" id="users-tab" style="display: none;">Gerenciar Usuários</button>
             </div>
 
@@ -610,123 +607,6 @@
 
             <!-- Create/Edit Post -->
             <div id="create-tab" class="tab-content">
-
-                ```html
-<!-- ABA ANALYTICS -->
-<div id="analytics-tab-content" class="tab-content">
-    <div class="content-section">
-        <h2 style="margin-bottom: 2rem; font-size: 1.8rem;">📊 Analytics & Métricas</h2>
-        
-        <!-- Filtros -->
-        <div class="analytics-filters">
-            <div class="filter-group">
-                <label>Período:</label>
-                <select id="analytics-period" class="form-select">
-                    <option value="7">Últimos 7 dias</option>
-                    <option value="30">Últimos 30 dias</option>
-                    <option value="90">Últimos 90 dias</option>
-                    <option value="all">Todo período</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label>Categoria:</label>
-                <select id="analytics-category" class="form-select">
-                    <option value="all">Todas</option>
-                    <option value="filmes">Filmes</option>
-                    <option value="series">Séries</option>
-                    <option value="xbox">Xbox</option>
-                    <option value="playstation">PlayStation</option>
-                    <option value="nintendo">Nintendo</option>
-                    <option value="pc">PC Gaming</option>
-                    <option value="tecnologia">Tecnologia</option>
-                    <option value="anime">Anime</option>
-                    <option value="ia">IA</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label>Ordenar por:</label>
-                <select id="analytics-sort" class="form-select">
-                    <option value="views">Visualizações</option>
-                    <option value="likes">Curtidas</option>
-                    <option value="reactions">Reações</option>
-                    <option value="shares">Compartilhamentos</option>
-                    <option value="engagement">Engajamento</option>
-                    <option value="reading_time">Tempo de Leitura</option>
-                    <option value="date">Data</option>
-                </select>
-            </div>
-            
-            <button class="btn btn-primary" onclick="loadAnalytics()">
-                🔄 Atualizar
-            </button>
-            
-            <button class="btn btn-secondary" onclick="exportAnalyticsCSV()">
-                📥 Exportar CSV
-            </button>
-        </div>
-        
-        <!-- Cards de Resumo -->
-        <div class="analytics-summary">
-            <div class="summary-card">
-                <div class="summary-icon">👁️</div>
-                <div class="summary-info">
-                    <div class="summary-label">Total de Views</div>
-                    <div class="summary-value" id="total-views">-</div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <div class="summary-icon">💚</div>
-                <div class="summary-info">
-                    <div class="summary-label">Total de Likes</div>
-                    <div class="summary-value" id="total-likes">-</div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <div class="summary-icon">🎭</div>
-                <div class="summary-info">
-                    <div class="summary-label">Total Reações</div>
-                    <div class="summary-value" id="total-reactions">-</div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <div class="summary-icon">🔗</div>
-                <div class="summary-info">
-                    <div class="summary-label">Compartilhamentos</div>
-                    <div class="summary-value" id="total-shares">-</div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <div class="summary-icon">⏱️</div>
-                <div class="summary-info">
-                    <div class="summary-label">Tempo Médio</div>
-                    <div class="summary-value" id="avg-reading-time">-</div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <div class="summary-icon">📈</div>
-                <div class="summary-info">
-                    <div class="summary-label">Engajamento</div>
-                    <div class="summary-value" id="engagement-rate">-</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tabela de Posts -->
-        <div id="analytics-table-container">
-            <!-- Será preenchido via JavaScript -->
-        </div>
-    </div>
-</div>
-```
-
-                
                 <div class="post-card" style="max-width: 800px; margin: 0 auto;">
                     <div class="post-content">
                         <h2 id="form-title" style="margin-bottom: 2rem; font-size: 1.8rem;">Criar Nova Notícia</h2>
@@ -821,6 +701,119 @@ https://image2.jpg"></textarea>
                 </div>
             </div>
 
+            <!-- Analytics Tab -->
+            <div id="analytics-tab-content" class="tab-content">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <h2 style="margin-bottom: 2rem; font-size: 1.8rem;">📊 Analytics & Métricas</h2>
+                    
+                    <!-- Filtros -->
+                    <div class="analytics-filters">
+                        <div class="filter-group">
+                            <label>Período:</label>
+                            <select id="analytics-period" class="form-select">
+                                <option value="7">Últimos 7 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                                <option value="90">Últimos 90 dias</option>
+                                <option value="all">Todo período</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Categoria:</label>
+                            <select id="analytics-category" class="form-select">
+                                <option value="all">Todas</option>
+                                <option value="filmes">Filmes</option>
+                                <option value="series">Séries</option>
+                                <option value="xbox">Xbox</option>
+                                <option value="playstation">PlayStation</option>
+                                <option value="nintendo">Nintendo</option>
+                                <option value="pc">PC Gaming</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="anime">Anime</option>
+                                <option value="ia">IA</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Ordenar por:</label>
+                            <select id="analytics-sort" class="form-select">
+                                <option value="views">Visualizações</option>
+                                <option value="likes">Curtidas</option>
+                                <option value="reactions">Reações</option>
+                                <option value="shares">Compartilhamentos</option>
+                                <option value="engagement">Engajamento</option>
+                                <option value="reading_time">Tempo de Leitura</option>
+                                <option value="date">Data</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="loadAnalytics()">
+                            🔄 Atualizar
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="exportAnalyticsCSV()">
+                            📥 Exportar CSV
+                        </button>
+                    </div>
+                    
+                    <!-- Cards de Resumo -->
+                    <div class="analytics-summary">
+                        <div class="summary-card">
+                            <div class="summary-icon">👁️</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Total de Views</div>
+                                <div class="summary-value" id="total-views">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-icon">💚</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Total de Likes</div>
+                                <div class="summary-value" id="total-likes">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-icon">🎭</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Total Reações</div>
+                                <div class="summary-value" id="total-reactions">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-icon">🔗</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Compartilhamentos</div>
+                                <div class="summary-value" id="total-shares">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-icon">⏱️</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Tempo Médio</div>
+                                <div class="summary-value" id="avg-reading-time">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <div class="summary-icon">📈</div>
+                            <div class="summary-info">
+                                <div class="summary-label">Engajamento</div>
+                                <div class="summary-value" id="engagement-rate">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabela de Posts -->
+                    <div id="analytics-table-container">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Users Management -->
             <div id="users-tab-content" class="tab-content">
                 <div style="max-width: 1000px; margin: 0 auto;">
@@ -881,6 +874,6 @@ https://image2.jpg"></textarea>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-    <script src="admin.js"></script>
+    <script src="admin-v3.js"></script>
 </body>
 </html>
